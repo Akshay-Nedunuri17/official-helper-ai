@@ -14,16 +14,242 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          scheme_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          scheme_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          scheme_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_scheme_id_fkey"
+            columns: ["scheme_id"]
+            isOneToOne: false
+            referencedRelation: "schemes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offices: {
+        Row: {
+          address: string
+          city: string
+          created_at: string
+          department: string
+          email: string | null
+          hours: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          phone: string | null
+          pincode: string | null
+          state: string
+        }
+        Insert: {
+          address: string
+          city: string
+          created_at?: string
+          department: string
+          email?: string | null
+          hours?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          phone?: string | null
+          pincode?: string | null
+          state: string
+        }
+        Update: {
+          address?: string
+          city?: string
+          created_at?: string
+          department?: string
+          email?: string | null
+          hours?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          phone?: string | null
+          pincode?: string | null
+          state?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          preferred_language: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          preferred_language?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          preferred_language?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      schemes: {
+        Row: {
+          apply_url: string | null
+          benefits_en: string | null
+          benefits_te: string | null
+          category: string
+          created_at: string
+          description_en: string
+          description_te: string | null
+          documents: string[]
+          eligibility_en: string | null
+          eligibility_te: string | null
+          id: string
+          ministry: string | null
+          name_en: string
+          name_te: string | null
+          state: string | null
+        }
+        Insert: {
+          apply_url?: string | null
+          benefits_en?: string | null
+          benefits_te?: string | null
+          category: string
+          created_at?: string
+          description_en: string
+          description_te?: string | null
+          documents?: string[]
+          eligibility_en?: string | null
+          eligibility_te?: string | null
+          id?: string
+          ministry?: string | null
+          name_en: string
+          name_te?: string | null
+          state?: string | null
+        }
+        Update: {
+          apply_url?: string | null
+          benefits_en?: string | null
+          benefits_te?: string | null
+          category?: string
+          created_at?: string
+          description_en?: string
+          description_te?: string | null
+          documents?: string[]
+          eligibility_en?: string | null
+          eligibility_te?: string | null
+          id?: string
+          ministry?: string | null
+          name_en?: string
+          name_te?: string | null
+          state?: string | null
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          created_at: string
+          department: string | null
+          description_en: string | null
+          description_te: string | null
+          documents: string[]
+          fee: string | null
+          id: string
+          name_en: string
+          name_te: string | null
+          procedure_en: string | null
+          procedure_te: string | null
+          processing_time: string | null
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          description_en?: string | null
+          description_te?: string | null
+          documents?: string[]
+          fee?: string | null
+          id?: string
+          name_en: string
+          name_te?: string | null
+          procedure_en?: string | null
+          procedure_te?: string | null
+          processing_time?: string | null
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          description_en?: string | null
+          description_te?: string | null
+          documents?: string[]
+          fee?: string | null
+          id?: string
+          name_en?: string
+          name_te?: string | null
+          procedure_en?: string | null
+          procedure_te?: string | null
+          processing_time?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +376,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
