@@ -12,7 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SchemesRouteImport } from './routes/schemes'
 import { Route as OfficesRouteImport } from './routes/offices'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AssistantRouteImport } from './routes/assistant'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
 const ServicesRoute = ServicesRouteImport.update({
@@ -30,9 +33,24 @@ const OfficesRoute = OfficesRouteImport.update({
   path: '/offices',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssistantRoute = AssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -43,14 +61,20 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/assistant': typeof AssistantRoute
   '/auth': typeof AuthRoute
+  '/dashboard': typeof DashboardRoute
   '/offices': typeof OfficesRoute
   '/schemes': typeof SchemesRoute
   '/services': typeof ServicesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/assistant': typeof AssistantRoute
   '/auth': typeof AuthRoute
+  '/dashboard': typeof DashboardRoute
   '/offices': typeof OfficesRoute
   '/schemes': typeof SchemesRoute
   '/services': typeof ServicesRoute
@@ -58,22 +82,53 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/assistant': typeof AssistantRoute
   '/auth': typeof AuthRoute
+  '/dashboard': typeof DashboardRoute
   '/offices': typeof OfficesRoute
   '/schemes': typeof SchemesRoute
   '/services': typeof ServicesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/offices' | '/schemes' | '/services'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/assistant'
+    | '/auth'
+    | '/dashboard'
+    | '/offices'
+    | '/schemes'
+    | '/services'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/offices' | '/schemes' | '/services'
-  id: '__root__' | '/' | '/auth' | '/offices' | '/schemes' | '/services'
+  to:
+    | '/'
+    | '/admin'
+    | '/assistant'
+    | '/auth'
+    | '/dashboard'
+    | '/offices'
+    | '/schemes'
+    | '/services'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/assistant'
+    | '/auth'
+    | '/dashboard'
+    | '/offices'
+    | '/schemes'
+    | '/services'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  AssistantRoute: typeof AssistantRoute
   AuthRoute: typeof AuthRoute
+  DashboardRoute: typeof DashboardRoute
   OfficesRoute: typeof OfficesRoute
   SchemesRoute: typeof SchemesRoute
   ServicesRoute: typeof ServicesRoute
@@ -102,11 +157,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OfficesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assistant': {
+      id: '/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -121,7 +197,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  AssistantRoute: AssistantRoute,
   AuthRoute: AuthRoute,
+  DashboardRoute: DashboardRoute,
   OfficesRoute: OfficesRoute,
   SchemesRoute: SchemesRoute,
   ServicesRoute: ServicesRoute,
