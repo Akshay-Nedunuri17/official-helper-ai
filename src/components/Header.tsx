@@ -17,8 +17,11 @@ export function Header() {
     { to: "/", label: t("nav_home") },
     { to: "/assistant", label: t("nav_assistant") },
     { to: "/schemes", label: t("nav_schemes") },
+    { to: "/wizard", label: t("nav_wizard") },
+    { to: "/updates", label: t("nav_updates") },
     { to: "/services", label: t("nav_services") },
     { to: "/offices", label: t("nav_offices") },
+    { to: "/complaints", label: t("nav_complaints") },
   ];
   if (user) links.push({ to: "/dashboard", label: t("nav_dashboard") });
   if (isAdmin) links.push({ to: "/admin", label: t("nav_admin") });
