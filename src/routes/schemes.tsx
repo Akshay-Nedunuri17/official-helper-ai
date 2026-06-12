@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useMemo, useRef } from "react";
-import { Search, Mic, Heart, ExternalLink, FileText } from "lucide-react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { Search, Mic, Heart, ExternalLink, FileText, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { downloadChecklistPDF } from "@/lib/pdf";
 
 export const Route = createFileRoute("/schemes")({ component: Schemes });
 
@@ -57,6 +58,23 @@ function Schemes() {
     const hay = `${s.name_en} ${s.name_te ?? ""} ${s.description_en} ${s.category} ${(s.documents ?? []).join(" ")}`.toLowerCase();
     return hay.includes(q.toLowerCase());
   });
+
+  // Log search queries (debounced)
+  useEffect(() => {
+    const term = q.trim();
+    if (term.length < 3) return;
+    const t = setTimeout(() => {
+      supabase.from("search_logs").insert({ query: term.slice(0, 100), user_id: user?.id ?? null, results_count: filtered.length });
+    }, 1200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
+
+  // Log scheme view when modal opens
+  useEffect(() => {
+    if (!active) return;
+    supabase.from("scheme_views").insert({ scheme_id: active, user_id: user?.id ?? null });
+  }, [active, user?.id]);
 
   const startVoice = () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -113,8 +131,11 @@ function Schemes() {
               <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
                 {lang === "te" && s.description_te ? s.description_te : s.description_en}
               </p>
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 <Button size="sm" variant="outline" onClick={() => setActive(s.id)}>Details</Button>
+                <Button size="sm" variant="ghost" onClick={() => downloadChecklistPDF(s)} className="gap-1.5" aria-label="Download PDF checklist">
+                  <Download className="size-3" /> PDF
+                </Button>
                 {s.apply_url && (
                   <a href={s.apply_url} target="_blank" rel="noreferrer">
                     <Button size="sm" className="gap-1.5">{t("apply_now")} <ExternalLink className="size-3" /></Button>
@@ -144,12 +165,15 @@ function Schemes() {
               {sel.documents.map((d) => <li key={d} className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-primary" /> {d}</li>)}
             </ul>
 
-            <div className="mt-6 flex gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               {sel.apply_url && (
-                <a href={sel.apply_url} target="_blank" rel="noreferrer" className="flex-1">
+                <a href={sel.apply_url} target="_blank" rel="noreferrer" className="flex-1 min-w-[160px]">
                   <Button className="w-full gradient-hero text-primary-foreground border-0">{t("apply_now")}</Button>
                 </a>
               )}
+              <Button variant="outline" onClick={() => downloadChecklistPDF(sel)} className="gap-2">
+                <Download className="size-4" /> PDF checklist
+              </Button>
               <Button variant="outline" onClick={() => setActive(null)}>Close</Button>
             </div>
           </div>

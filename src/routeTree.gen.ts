@@ -9,15 +9,28 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WizardRouteImport } from './routes/wizard'
+import { Route as UpdatesRouteImport } from './routes/updates'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SchemesRouteImport } from './routes/schemes'
 import { Route as OfficesRouteImport } from './routes/offices'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ComplaintsRouteImport } from './routes/complaints'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
+const WizardRoute = WizardRouteImport.update({
+  id: '/wizard',
+  path: '/wizard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UpdatesRoute = UpdatesRouteImport.update({
+  id: '/updates',
+  path: '/updates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
   path: '/services',
@@ -36,6 +49,11 @@ const OfficesRoute = OfficesRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComplaintsRoute = ComplaintsRouteImport.update({
+  id: '/complaints',
+  path: '/complaints',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -64,20 +82,26 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/assistant': typeof AssistantRoute
   '/auth': typeof AuthRoute
+  '/complaints': typeof ComplaintsRoute
   '/dashboard': typeof DashboardRoute
   '/offices': typeof OfficesRoute
   '/schemes': typeof SchemesRoute
   '/services': typeof ServicesRoute
+  '/updates': typeof UpdatesRoute
+  '/wizard': typeof WizardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/assistant': typeof AssistantRoute
   '/auth': typeof AuthRoute
+  '/complaints': typeof ComplaintsRoute
   '/dashboard': typeof DashboardRoute
   '/offices': typeof OfficesRoute
   '/schemes': typeof SchemesRoute
   '/services': typeof ServicesRoute
+  '/updates': typeof UpdatesRoute
+  '/wizard': typeof WizardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -85,10 +109,13 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/assistant': typeof AssistantRoute
   '/auth': typeof AuthRoute
+  '/complaints': typeof ComplaintsRoute
   '/dashboard': typeof DashboardRoute
   '/offices': typeof OfficesRoute
   '/schemes': typeof SchemesRoute
   '/services': typeof ServicesRoute
+  '/updates': typeof UpdatesRoute
+  '/wizard': typeof WizardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -97,30 +124,39 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assistant'
     | '/auth'
+    | '/complaints'
     | '/dashboard'
     | '/offices'
     | '/schemes'
     | '/services'
+    | '/updates'
+    | '/wizard'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
     | '/assistant'
     | '/auth'
+    | '/complaints'
     | '/dashboard'
     | '/offices'
     | '/schemes'
     | '/services'
+    | '/updates'
+    | '/wizard'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/assistant'
     | '/auth'
+    | '/complaints'
     | '/dashboard'
     | '/offices'
     | '/schemes'
     | '/services'
+    | '/updates'
+    | '/wizard'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -128,14 +164,31 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AssistantRoute: typeof AssistantRoute
   AuthRoute: typeof AuthRoute
+  ComplaintsRoute: typeof ComplaintsRoute
   DashboardRoute: typeof DashboardRoute
   OfficesRoute: typeof OfficesRoute
   SchemesRoute: typeof SchemesRoute
   ServicesRoute: typeof ServicesRoute
+  UpdatesRoute: typeof UpdatesRoute
+  WizardRoute: typeof WizardRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wizard': {
+      id: '/wizard'
+      path: '/wizard'
+      fullPath: '/wizard'
+      preLoaderRoute: typeof WizardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/updates': {
+      id: '/updates'
+      path: '/updates'
+      fullPath: '/updates'
+      preLoaderRoute: typeof UpdatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/services': {
       id: '/services'
       path: '/services'
@@ -162,6 +215,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/complaints': {
+      id: '/complaints'
+      path: '/complaints'
+      fullPath: '/complaints'
+      preLoaderRoute: typeof ComplaintsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -200,10 +260,13 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AssistantRoute: AssistantRoute,
   AuthRoute: AuthRoute,
+  ComplaintsRoute: ComplaintsRoute,
   DashboardRoute: DashboardRoute,
   OfficesRoute: OfficesRoute,
   SchemesRoute: SchemesRoute,
   ServicesRoute: ServicesRoute,
+  UpdatesRoute: UpdatesRoute,
+  WizardRoute: WizardRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
