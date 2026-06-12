@@ -162,12 +162,15 @@ function Schemes() {
               {sel.documents.map((d) => <li key={d} className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-primary" /> {d}</li>)}
             </ul>
 
-            <div className="mt-6 flex gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               {sel.apply_url && (
-                <a href={sel.apply_url} target="_blank" rel="noreferrer" className="flex-1">
+                <a href={sel.apply_url} target="_blank" rel="noreferrer" className="flex-1 min-w-[160px]">
                   <Button className="w-full gradient-hero text-primary-foreground border-0">{t("apply_now")}</Button>
                 </a>
               )}
+              <Button variant="outline" onClick={() => downloadChecklistPDF(sel)} className="gap-2">
+                <Download className="size-4" /> PDF checklist
+              </Button>
               <Button variant="outline" onClick={() => setActive(null)}>Close</Button>
             </div>
           </div>
