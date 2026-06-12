@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Sparkles, ShieldCheck, Languages, Search } from "lucide-react";
+import { ArrowRight, Sparkles, ShieldCheck, Languages, Search, ListChecks, TrendingUp, MessageSquareWarning } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
