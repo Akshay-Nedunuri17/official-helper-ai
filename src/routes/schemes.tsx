@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useMemo, useRef } from "react";
-import { Search, Mic, Heart, ExternalLink, FileText } from "lucide-react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { Search, Mic, Heart, ExternalLink, FileText, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { downloadChecklistPDF } from "@/lib/pdf";
 
 export const Route = createFileRoute("/schemes")({ component: Schemes });
 
