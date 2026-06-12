@@ -13,6 +13,7 @@ import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SchemesRouteImport } from './routes/schemes'
 import { Route as OfficesRouteImport } from './routes/offices'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ComplaintsRouteImport } from './routes/complaints'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -36,6 +37,11 @@ const OfficesRoute = OfficesRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComplaintsRoute = ComplaintsRouteImport.update({
+  id: '/complaints',
+  path: '/complaints',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/assistant': typeof AssistantRoute
   '/auth': typeof AuthRoute
+  '/complaints': typeof ComplaintsRoute
   '/dashboard': typeof DashboardRoute
   '/offices': typeof OfficesRoute
   '/schemes': typeof SchemesRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/assistant': typeof AssistantRoute
   '/auth': typeof AuthRoute
+  '/complaints': typeof ComplaintsRoute
   '/dashboard': typeof DashboardRoute
   '/offices': typeof OfficesRoute
   '/schemes': typeof SchemesRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/assistant': typeof AssistantRoute
   '/auth': typeof AuthRoute
+  '/complaints': typeof ComplaintsRoute
   '/dashboard': typeof DashboardRoute
   '/offices': typeof OfficesRoute
   '/schemes': typeof SchemesRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assistant'
     | '/auth'
+    | '/complaints'
     | '/dashboard'
     | '/offices'
     | '/schemes'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assistant'
     | '/auth'
+    | '/complaints'
     | '/dashboard'
     | '/offices'
     | '/schemes'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assistant'
     | '/auth'
+    | '/complaints'
     | '/dashboard'
     | '/offices'
     | '/schemes'
@@ -128,6 +140,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AssistantRoute: typeof AssistantRoute
   AuthRoute: typeof AuthRoute
+  ComplaintsRoute: typeof ComplaintsRoute
   DashboardRoute: typeof DashboardRoute
   OfficesRoute: typeof OfficesRoute
   SchemesRoute: typeof SchemesRoute
@@ -162,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/complaints': {
+      id: '/complaints'
+      path: '/complaints'
+      fullPath: '/complaints'
+      preLoaderRoute: typeof ComplaintsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -200,6 +220,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AssistantRoute: AssistantRoute,
   AuthRoute: AuthRoute,
+  ComplaintsRoute: ComplaintsRoute,
   DashboardRoute: DashboardRoute,
   OfficesRoute: OfficesRoute,
   SchemesRoute: SchemesRoute,
