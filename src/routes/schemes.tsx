@@ -131,8 +131,11 @@ function Schemes() {
               <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
                 {lang === "te" && s.description_te ? s.description_te : s.description_en}
               </p>
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 <Button size="sm" variant="outline" onClick={() => setActive(s.id)}>Details</Button>
+                <Button size="sm" variant="ghost" onClick={() => downloadChecklistPDF(s)} className="gap-1.5" aria-label="Download PDF checklist">
+                  <Download className="size-3" /> PDF
+                </Button>
                 {s.apply_url && (
                   <a href={s.apply_url} target="_blank" rel="noreferrer">
                     <Button size="sm" className="gap-1.5">{t("apply_now")} <ExternalLink className="size-3" /></Button>
