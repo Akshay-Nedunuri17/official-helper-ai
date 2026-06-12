@@ -92,6 +92,25 @@ function Home() {
         </div>
       </section>
 
+      {/* FEATURE QUICK LINKS */}
+      <section className="container mx-auto px-4 pt-4 pb-8">
+        <div className="grid sm:grid-cols-3 gap-4">
+          {[
+            { to: "/wizard", I: ListChecks, t: lang === "en" ? "Eligibility Wizard" : "అర్హత విజార్డ్", d: lang === "en" ? "Answer 6 questions, get matched schemes." : "6 ప్రశ్నలకు సమాధానం ఇవ్వండి, సరిపోలే పథకాలు పొందండి." },
+            { to: "/updates", I: TrendingUp, t: lang === "en" ? "Government Updates" : "ప్రభుత్వ నవీకరణలు", d: lang === "en" ? "Latest and trending schemes." : "తాజా మరియు ట్రెండింగ్ పథకాలు." },
+            { to: "/complaints", I: MessageSquareWarning, t: lang === "en" ? "File a Complaint" : "ఫిర్యాదు చేయండి", d: lang === "en" ? "Report civic issues with photo + location." : "ఫోటోతో పౌర సమస్యలను నివేదించండి." },
+          ].map((f) => (
+            <Link key={f.to} to={f.to} className="group gradient-card rounded-xl p-5 border border-border flex items-start gap-3 hover:shadow-elegant hover:-translate-y-0.5 transition-all">
+              <div className="size-10 shrink-0 rounded-lg gradient-hero grid place-items-center text-primary-foreground"><f.I className="size-5" /></div>
+              <div className="min-w-0">
+                <div className="font-bold group-hover:text-primary transition-colors">{f.t}</div>
+                <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{f.d}</div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* FEATURED */}
       <section className="container mx-auto px-4 pb-20">
         <div className="flex items-end justify-between mb-8">
