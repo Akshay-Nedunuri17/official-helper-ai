@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WizardRouteImport } from './routes/wizard'
+import { Route as UpdatesRouteImport } from './routes/updates'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SchemesRouteImport } from './routes/schemes'
 import { Route as OfficesRouteImport } from './routes/offices'
@@ -23,6 +24,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const WizardRoute = WizardRouteImport.update({
   id: '/wizard',
   path: '/wizard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UpdatesRoute = UpdatesRouteImport.update({
+  id: '/updates',
+  path: '/updates',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServicesRoute = ServicesRouteImport.update({
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/offices': typeof OfficesRoute
   '/schemes': typeof SchemesRoute
   '/services': typeof ServicesRoute
+  '/updates': typeof UpdatesRoute
   '/wizard': typeof WizardRoute
 }
 export interface FileRoutesByTo {
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/offices': typeof OfficesRoute
   '/schemes': typeof SchemesRoute
   '/services': typeof ServicesRoute
+  '/updates': typeof UpdatesRoute
   '/wizard': typeof WizardRoute
 }
 export interface FileRoutesById {
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/offices': typeof OfficesRoute
   '/schemes': typeof SchemesRoute
   '/services': typeof ServicesRoute
+  '/updates': typeof UpdatesRoute
   '/wizard': typeof WizardRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/offices'
     | '/schemes'
     | '/services'
+    | '/updates'
     | '/wizard'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/offices'
     | '/schemes'
     | '/services'
+    | '/updates'
     | '/wizard'
   id:
     | '__root__'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/offices'
     | '/schemes'
     | '/services'
+    | '/updates'
     | '/wizard'
   fileRoutesById: FileRoutesById
 }
@@ -157,6 +169,7 @@ export interface RootRouteChildren {
   OfficesRoute: typeof OfficesRoute
   SchemesRoute: typeof SchemesRoute
   ServicesRoute: typeof ServicesRoute
+  UpdatesRoute: typeof UpdatesRoute
   WizardRoute: typeof WizardRoute
 }
 
@@ -167,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/wizard'
       fullPath: '/wizard'
       preLoaderRoute: typeof WizardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/updates': {
+      id: '/updates'
+      path: '/updates'
+      fullPath: '/updates'
+      preLoaderRoute: typeof UpdatesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/services': {
@@ -245,6 +265,7 @@ const rootRouteChildren: RootRouteChildren = {
   OfficesRoute: OfficesRoute,
   SchemesRoute: SchemesRoute,
   ServicesRoute: ServicesRoute,
+  UpdatesRoute: UpdatesRoute,
   WizardRoute: WizardRoute,
 }
 export const routeTree = rootRouteImport
