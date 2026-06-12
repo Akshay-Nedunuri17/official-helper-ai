@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      complaints: {
+        Row: {
+          address: string | null
+          admin_response: string | null
+          category: string
+          created_at: string
+          description: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          photo_url: string | null
+          status: string
+          title: string
+          tracking_number: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          admin_response?: string | null
+          category: string
+          created_at?: string
+          description: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          photo_url?: string | null
+          status?: string
+          title: string
+          tracking_number?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          admin_response?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          photo_url?: string | null
+          status?: string
+          title?: string
+          tracking_number?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -118,6 +169,35 @@ export type Database = {
         }
         Relationships: []
       }
+      scheme_views: {
+        Row: {
+          created_at: string
+          id: string
+          scheme_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          scheme_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          scheme_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheme_views_scheme_id_fkey"
+            columns: ["scheme_id"]
+            isOneToOne: false
+            referencedRelation: "schemes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schemes: {
         Row: {
           apply_url: string | null
@@ -131,10 +211,12 @@ export type Database = {
           eligibility_en: string | null
           eligibility_te: string | null
           id: string
+          is_trending: boolean
           ministry: string | null
           name_en: string
           name_te: string | null
           state: string | null
+          updated_at: string
         }
         Insert: {
           apply_url?: string | null
@@ -148,10 +230,12 @@ export type Database = {
           eligibility_en?: string | null
           eligibility_te?: string | null
           id?: string
+          is_trending?: boolean
           ministry?: string | null
           name_en: string
           name_te?: string | null
           state?: string | null
+          updated_at?: string
         }
         Update: {
           apply_url?: string | null
@@ -165,10 +249,36 @@ export type Database = {
           eligibility_en?: string | null
           eligibility_te?: string | null
           id?: string
+          is_trending?: boolean
           ministry?: string | null
           name_en?: string
           name_te?: string | null
           state?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      search_logs: {
+        Row: {
+          created_at: string
+          id: string
+          query: string
+          results_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          query: string
+          results_count?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          query?: string
+          results_count?: number | null
+          user_id?: string | null
         }
         Relationships: []
       }
