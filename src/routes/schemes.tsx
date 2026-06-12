@@ -59,6 +59,23 @@ function Schemes() {
     return hay.includes(q.toLowerCase());
   });
 
+  // Log search queries (debounced)
+  useEffect(() => {
+    const term = q.trim();
+    if (term.length < 3) return;
+    const t = setTimeout(() => {
+      supabase.from("search_logs").insert({ query: term.slice(0, 100), user_id: user?.id ?? null, results_count: filtered.length });
+    }, 1200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
+
+  // Log scheme view when modal opens
+  useEffect(() => {
+    if (!active) return;
+    supabase.from("scheme_views").insert({ scheme_id: active, user_id: user?.id ?? null });
+  }, [active, user?.id]);
+
   const startVoice = () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) { toast.error("Voice search not supported in this browser"); return; }
