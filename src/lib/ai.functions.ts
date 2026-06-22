@@ -25,15 +25,14 @@ export const chatAI = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const userState = data.profile?.state;
     // Prioritise: state-specific → central → others. Pull state schemes first, then top central.
-    const [stateRes, centralRes] = await Promise.all([
-      userState
-        ? supabaseAdmin.from("schemes").select("name_en,category,ministry,eligibility_en,benefits_en,documents,apply_url,state,district,gender,min_age,max_age,income_limit,occupation").eq("state", userState).limit(40)
-        : Promise.resolve({ data: [] as any[] }),
-      supabaseAdmin.from("schemes").select("name_en,category,ministry,eligibility_en,benefits_en,documents,apply_url,state,district,gender,min_age,max_age,income_limit,occupation").eq("state", "All India").limit(60),
-    ]);
-    const stateSchemes = stateRes.data ?? [];
-    const centralSchemes = centralRes.data ?? [];
-    const allSchemes = [...stateSchemes, ...centralSchemes];
+    const cols = "name_en,category,ministry,eligibility_en,benefits_en,documents,apply_url,state,district,gender,min_age,max_age,income_limit,occupation";
+    const stateQ = userState
+      ? supabaseAdmin.from("schemes").select(cols).eq("state", userState).limit(40)
+      : null;
+    const centralQ = supabaseAdmin.from("schemes").select(cols).eq("state", "All India").limit(60);
+    const [stateRes, centralRes] = await Promise.all([stateQ, centralQ]);
+    const stateSchemes = (stateRes?.data ?? []) as any[];
+    const centralSchemes = (centralRes?.data ?? []) as any[];
 
     const fmt = (s: any, i: number, tag: string) =>
       `${i + 1}. [${tag}] ${s.name_en} (${s.category}${s.ministry ? ", " + s.ministry : ""}, ${s.state}${s.district ? " · " + s.district : ""}) — Eligibility: ${s.eligibility_en ?? "—"}. Benefits: ${s.benefits_en ?? "—"}. Docs: ${(s.documents ?? []).join(", ")}. Apply: ${s.apply_url ?? "—"}`;
