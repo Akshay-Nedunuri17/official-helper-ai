@@ -40,7 +40,7 @@ export const chatAI = createServerFn({ method: "POST" })
       ...stateSchemes.map((s, i) => fmt(s, i, `STATE:${userState}`)),
       ...centralSchemes.map((s, i) => fmt(s, stateSchemes.length + i, "CENTRAL")),
     ].join("\n");
-    void allSchemes;
+    
 
     const p = data.profile;
     const profileBlock = p && Object.values(p).some(Boolean)
