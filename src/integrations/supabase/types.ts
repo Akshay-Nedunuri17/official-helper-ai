@@ -203,18 +203,28 @@ export type Database = {
           apply_url: string | null
           benefits_en: string | null
           benefits_te: string | null
+          caste_categories: string[] | null
           category: string
           created_at: string
           description_en: string
           description_te: string | null
+          district: string | null
           documents: string[]
           eligibility_en: string | null
           eligibility_te: string | null
+          gender: string | null
           id: string
+          income_limit: number | null
           is_trending: boolean
+          last_updated: string | null
+          max_age: number | null
+          min_age: number | null
           ministry: string | null
+          minority_only: boolean
           name_en: string
           name_te: string | null
+          occupation: string | null
+          official_url: string | null
           state: string | null
           updated_at: string
         }
@@ -222,18 +232,28 @@ export type Database = {
           apply_url?: string | null
           benefits_en?: string | null
           benefits_te?: string | null
+          caste_categories?: string[] | null
           category: string
           created_at?: string
           description_en: string
           description_te?: string | null
+          district?: string | null
           documents?: string[]
           eligibility_en?: string | null
           eligibility_te?: string | null
+          gender?: string | null
           id?: string
+          income_limit?: number | null
           is_trending?: boolean
+          last_updated?: string | null
+          max_age?: number | null
+          min_age?: number | null
           ministry?: string | null
+          minority_only?: boolean
           name_en: string
           name_te?: string | null
+          occupation?: string | null
+          official_url?: string | null
           state?: string | null
           updated_at?: string
         }
@@ -241,18 +261,28 @@ export type Database = {
           apply_url?: string | null
           benefits_en?: string | null
           benefits_te?: string | null
+          caste_categories?: string[] | null
           category?: string
           created_at?: string
           description_en?: string
           description_te?: string | null
+          district?: string | null
           documents?: string[]
           eligibility_en?: string | null
           eligibility_te?: string | null
+          gender?: string | null
           id?: string
+          income_limit?: number | null
           is_trending?: boolean
+          last_updated?: string | null
+          max_age?: number | null
+          min_age?: number | null
           ministry?: string | null
+          minority_only?: boolean
           name_en?: string
           name_te?: string | null
+          occupation?: string | null
+          official_url?: string | null
           state?: string | null
           updated_at?: string
         }
