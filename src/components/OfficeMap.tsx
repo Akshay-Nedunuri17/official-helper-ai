@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap, useMapEvents } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -43,31 +43,67 @@ function FitBounds({ offices, user }: { offices: OfficePin[]; user?: [number, nu
   return null;
 }
 
+function ClickPicker({ onPick }: { onPick?: (lat: number, lng: number) => void }) {
+  useMapEvents({
+    click(e) {
+      if (onPick) onPick(e.latlng.lat, e.latlng.lng);
+    },
+  });
+  return null;
+}
+
 export function OfficeMap({
   offices,
   height = 480,
   userLocation,
+  accuracyMeters,
+  pickMode = false,
+  onPickLocation,
 }: {
   offices: OfficePin[];
   height?: number;
   userLocation?: [number, number] | null;
+  accuracyMeters?: number | null;
+  pickMode?: boolean;
+  onPickLocation?: (lat: number, lng: number) => void;
 }) {
   const center: [number, number] = userLocation ?? (offices.length
     ? [offices[0].latitude, offices[0].longitude]
     : [20.5937, 78.9629]);
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-border shadow-elegant" style={{ height }}>
+    <div
+      className="rounded-2xl overflow-hidden border border-border shadow-elegant relative"
+      style={{ height, cursor: pickMode ? "crosshair" : undefined }}
+    >
+      {pickMode && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-primary text-primary-foreground text-xs font-medium px-3 py-1.5 rounded-full shadow-lg pointer-events-none">
+          Tap the map to set your location
+        </div>
+      )}
       <MapContainer center={center} zoom={5} scrollWheelZoom style={{ height: "100%", width: "100%" }}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <FitBounds offices={offices} user={userLocation ?? null} />
+        <ClickPicker onPick={pickMode ? onPickLocation : undefined} />
         {userLocation && (
-          <Marker position={userLocation} icon={youIcon}>
-            <Popup>You are here</Popup>
-          </Marker>
+          <>
+            {accuracyMeters && accuracyMeters > 0 && (
+              <Circle
+                center={userLocation}
+                radius={accuracyMeters}
+                pathOptions={{ color: "#2563eb", fillColor: "#2563eb", fillOpacity: 0.12, weight: 1 }}
+              />
+            )}
+            <Marker position={userLocation} icon={youIcon}>
+              <Popup>
+                You are here
+                {accuracyMeters ? <div className="text-xs opacity-70">±{Math.round(accuracyMeters)} m accuracy</div> : null}
+              </Popup>
+            </Marker>
+          </>
         )}
         <MarkerClusterGroup chunkedLoading maxClusterRadius={60}>
           {offices.map((o) => (
