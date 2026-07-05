@@ -12,9 +12,11 @@ const Profile = z.object({
 
 const Input = z.object({
   messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string() })),
-  lang: z.enum(["en", "te"]).default("en"),
+  lang: z.string().min(2).max(8).default("en"),
+  langName: z.string().min(2).max(40).optional(),
   profile: Profile,
 });
+
 
 export const chatAI = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => Input.parse(d))
