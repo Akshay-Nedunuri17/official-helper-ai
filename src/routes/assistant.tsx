@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { chatAI } from "@/lib/ai.functions";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, LANGUAGES } from "@/lib/i18n";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 
