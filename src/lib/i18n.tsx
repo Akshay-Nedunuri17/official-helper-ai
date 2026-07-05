@@ -88,7 +88,7 @@ const dict = {
   why_2_d: "Full support for all 22 scheduled Indian languages.",
   why_3_t: "Verified info",
   why_3_d: "Eligibility, documents, fees and official portals in one place.",
-  services_office_hint: "Visit your nearest office to complete these services. Locations for every service listed here are available on the Offices page.",
+  services_office_hint: "Visit your nearest MeeSeva, e-Sevai, CSC, Sewa Kendra, Jan Seva Kendra, or district government office to complete these services. Locations across small towns, tehsils and cities all over India are listed on the",
 } as const;
 
 export type Key = keyof typeof dict;
