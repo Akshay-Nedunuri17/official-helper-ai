@@ -24,8 +24,12 @@ function Services() {
     <div className="container mx-auto px-4 py-10">
       <h1 className="text-3xl sm:text-4xl font-bold">{t("nav_services")}</h1>
       <p className="text-muted-foreground mt-2">
-        {lang === "en" ? "Step-by-step procedures for everyday government services." : "రోజువారీ ప్రభుత్వ సేవల కోసం దశల వారీ విధానాలు."}
+        {lang === "en" ? "Step-by-step procedures for everyday government services." : t("nav_services")}
       </p>
+      <div className="mt-3 rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">
+        📍 {t("services_office_hint")} <a href="/offices" className="text-primary font-medium underline underline-offset-2">{t("nav_offices")}</a>
+      </div>
+
 
       <div className="relative mt-6 max-w-xl">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
