@@ -1,17 +1,27 @@
 import { Link } from "@tanstack/react-router";
-import { Moon, Sun, Languages, Sparkles, Menu, X, LogOut } from "lucide-react";
+import { Moon, Sun, Languages, Sparkles, Menu, X, LogOut, Loader2, Check } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/lib/theme";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, LANGUAGES } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 
 export function Header() {
   const { theme, toggle } = useTheme();
-  const { lang, setLang, t } = useI18n();
+  const { lang, setLang, t, translating } = useI18n();
   const { user, isAdmin } = useAuth();
   const [open, setOpen] = useState(false);
+
+  const currentLang = LANGUAGES.find((l) => l.code === lang) ?? LANGUAGES[0];
 
   const links = [
     { to: "/", label: t("nav_home") },
@@ -51,10 +61,28 @@ export function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setLang(lang === "en" ? "te" : "en")} className="gap-1.5">
-            <Languages className="size-4" />
-            <span className="text-xs font-semibold">{lang === "en" ? "తె" : "EN"}</span>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-1.5" aria-label="language">
+                {translating ? <Loader2 className="size-4 animate-spin" /> : <Languages className="size-4" />}
+                <span className="text-xs font-semibold">{currentLang.native}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="max-h-[70vh] overflow-y-auto w-56">
+              <DropdownMenuLabel>Choose language</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {LANGUAGES.map((l) => (
+                <DropdownMenuItem key={l.code} onClick={() => setLang(l.code)} className="flex items-center justify-between">
+                  <span className="flex flex-col">
+                    <span className="text-sm">{l.native}</span>
+                    <span className="text-[10px] text-muted-foreground">{l.name}</span>
+                  </span>
+                  {l.code === lang && <Check className="size-4 text-primary" />}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <Button variant="ghost" size="icon" onClick={toggle} aria-label="theme">
             {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </Button>
