@@ -82,13 +82,19 @@ function Assistant() {
   const voice = () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) { toast.error("Voice not supported in this browser"); return; }
+    const bcp47: Record<string, string> = {
+      en: "en-IN", hi: "hi-IN", bn: "bn-IN", te: "te-IN", mr: "mr-IN", ta: "ta-IN",
+      ur: "ur-IN", gu: "gu-IN", kn: "kn-IN", or: "or-IN", ml: "ml-IN", pa: "pa-IN",
+      as: "as-IN", ne: "ne-IN", sa: "sa-IN",
+    };
     const r = new SR();
-    r.lang = lang === "te" ? "te-IN" : "en-IN";
+    r.lang = bcp47[lang] ?? "en-IN";
     r.onresult = (e: any) => setInput(e.results[0][0].transcript);
     r.onerror = () => toast.error("Voice failed");
     r.start();
     recRef.current = r;
   };
+
 
   const suggestions = lang === "te"
     ? ["రైతుల కోసం పథకాలు", "ఆధార్ ఎలా అప్‌డేట్ చేయాలి?", "మహిళలకు రుణ పథకాలు", "విద్యార్థి స్కాలర్‌షిప్‌లు"]
