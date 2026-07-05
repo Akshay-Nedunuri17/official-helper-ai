@@ -53,11 +53,13 @@ function Assistant() {
     if (typeof window !== "undefined") localStorage.setItem("js_profile", JSON.stringify(p));
   };
 
+  const langName = LANGUAGES.find((l) => l.code === lang)?.name ?? "English";
   const mut = useMutation({
-    mutationFn: async (history: Msg[]) => ask({ data: { messages: history, lang, profile } }),
+    mutationFn: async (history: Msg[]) => ask({ data: { messages: history, lang, langName, profile } }),
     onSuccess: (res) => setMessages((m) => [...m, { role: "assistant", content: res.reply }]),
     onError: (e: any) => toast.error(e.message),
   });
+
 
   const send = (text?: string) => {
     const content = (text ?? input).trim();
