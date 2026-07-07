@@ -167,9 +167,11 @@ function Offices() {
   };
 
   const filtered = useMemo(() => {
+    const ct = centerType !== "all" ? CENTER_TYPES.find((c) => c.key === centerType) : null;
     let list = data.filter((o) => {
       if (state !== "all" && o.state !== state) return false;
       if (department !== "all" && o.department !== department) return false;
+      if (ct && !matchesCenter(o.department, ct)) return false;
       if (!q) return true;
       return `${o.name} ${o.department} ${o.address} ${o.city} ${o.state}`.toLowerCase().includes(q.toLowerCase());
     });
