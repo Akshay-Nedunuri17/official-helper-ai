@@ -188,7 +188,23 @@ function Offices() {
       return nearbyOnly ? withDist.slice(0, 60) : withDist;
     }
     return list as (typeof list[number] & { distanceKm?: number })[];
-  }, [data, q, state, department, userLoc, nearbyOnly]);
+  }, [data, q, state, department, centerType, userLoc, nearbyOnly]);
+
+  // Auto-detect GPS once on mount (silent — falls back gracefully if denied).
+  useEffect(() => {
+    if (autoTriedRef.current || userLoc) return;
+    autoTriedRef.current = true;
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLoc([pos.coords.latitude, pos.coords.longitude]);
+        setAccuracy(pos.coords.accuracy ?? null);
+        setNearbyOnly(true);
+      },
+      () => { /* silent — user can click "Use my location" */ },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
+    );
+  }, [userLoc]);
 
   const mapPins = filtered
     .filter((o) => o.latitude != null && o.longitude != null)
