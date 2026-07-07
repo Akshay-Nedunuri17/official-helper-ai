@@ -384,7 +384,35 @@ function Offices() {
         </div>
       </div>
 
-      {userLoc && (
+      {/* Quick center-type filters */}
+      <div className="mt-4 -mx-1 overflow-x-auto">
+        <div className="flex gap-2 px-1 pb-1 min-w-max">
+          <button
+            onClick={() => setCenterType("all")}
+            className={`shrink-0 h-9 px-3 rounded-full border text-sm font-medium transition-colors ${
+              centerType === "all" ? "bg-primary text-primary-foreground border-primary" : "bg-background border-input hover:bg-accent"
+            }`}
+          >
+            {lang === "te" ? "అన్నీ" : "All centers"}
+          </button>
+          {CENTER_TYPES.map((c) => {
+            const active = centerType === c.key;
+            return (
+              <button
+                key={c.key}
+                onClick={() => setCenterType(active ? "all" : c.key)}
+                className={`shrink-0 h-9 px-3 rounded-full border text-sm font-medium transition-colors inline-flex items-center gap-1.5 ${
+                  active ? "bg-primary text-primary-foreground border-primary" : "bg-background border-input hover:bg-accent"
+                }`}
+              >
+                <span aria-hidden>{c.emoji}</span>
+                {c.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
         <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary">
             <LocateFixed className="size-3.5" />
