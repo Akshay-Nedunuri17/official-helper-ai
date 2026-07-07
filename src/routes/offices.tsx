@@ -413,6 +413,7 @@ function Offices() {
         </div>
       </div>
 
+      {userLoc && (
         <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary">
             <LocateFixed className="size-3.5" />
