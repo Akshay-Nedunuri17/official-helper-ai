@@ -13,6 +13,7 @@ import { ClientOnly } from "@/components/ClientOnly";
 import { OfficeMap } from "@/components/OfficeMap";
 import { toast } from "sonner";
 import Fuse from "fuse.js";
+import { CENTER_TYPES, matchesCenter } from "@/lib/center-types";
 
 export const Route = createFileRoute("/offices")({ component: Offices });
 
@@ -37,6 +38,7 @@ function Offices() {
   const [q, setQ] = useState("");
   const [state, setState] = useState("all");
   const [department, setDepartment] = useState("all");
+  const [centerType, setCenterType] = useState<string>("all");
   const [view, setView] = useState<"list" | "map">("list");
   const [nearbyOnly, setNearbyOnly] = useState(false);
   const [userLoc, setUserLoc] = useState<[number, number] | null>(null);
@@ -46,6 +48,7 @@ function Offices() {
   const [manualOpen, setManualOpen] = useState(false);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
+  const autoTriedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
 
