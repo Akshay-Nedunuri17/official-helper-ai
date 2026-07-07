@@ -1,11 +1,14 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { ShieldAlert, Users, FileText, MapPin, Building2, TrendingUp, Search as SearchIcon, MessageSquareWarning } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ShieldAlert, Users, FileText, MapPin, Building2, TrendingUp, Search as SearchIcon, MessageSquareWarning, Upload, Download, Loader2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
+import { importOffices } from "@/lib/office-import.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({ component: Admin });
 
@@ -161,6 +164,158 @@ function Admin() {
         </div>
         <Link to="/complaints" className="mt-4 inline-block text-sm text-primary font-medium">View all complaints →</Link>
       </div>
+
+      <OfficeImportCard />
     </div>
   );
 }
+
+const SAMPLE_CSV = `name,department,address,city,state,pincode,phone,email,latitude,longitude,hours
+MeeSeva Kendra - Example Town,MeeSeva,Main Road,Example Town,Andhra Pradesh,500001,08000000000,,17.385,78.4867,9:00 AM - 5:00 PM
+CSC - Sample Village,CSC,Village Panchayat Bhavan,Sample Village,Uttar Pradesh,226001,,,26.8467,80.9462,10:00 AM - 6:00 PM
+`;
+
+type ParsedRow = {
+  name: string;
+  department: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  hours?: string | null;
+};
+
+function parseCSV(text: string): ParsedRow[] {
+  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (lines.length < 2) return [];
+  // Simple CSV split — supports quoted fields with commas.
+  const splitLine = (line: string): string[] => {
+    const out: string[] = [];
+    let cur = "";
+    let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQ) {
+        if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+        else if (ch === '"') inQ = false;
+        else cur += ch;
+      } else {
+        if (ch === ',') { out.push(cur); cur = ""; }
+        else if (ch === '"') inQ = true;
+        else cur += ch;
+      }
+    }
+    out.push(cur);
+    return out.map((s) => s.trim());
+  };
+  const headers = splitLine(lines[0]).map((h) => h.toLowerCase());
+  const idx = (k: string) => headers.indexOf(k);
+  const iName = idx("name"), iDept = idx("department"), iAddr = idx("address"),
+    iCity = idx("city"), iState = idx("state"), iPin = idx("pincode"),
+    iPhone = idx("phone"), iEmail = idx("email"), iLat = idx("latitude"),
+    iLng = idx("longitude"), iHours = idx("hours");
+  if ([iName, iDept, iAddr, iCity, iState].some((i) => i === -1)) {
+    throw new Error("CSV must include columns: name, department, address, city, state");
+  }
+  const rows: ParsedRow[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const c = splitLine(lines[i]);
+    if (!c[iName] || !c[iCity] || !c[iState]) continue;
+    const lat = iLat >= 0 && c[iLat] ? Number(c[iLat]) : null;
+    const lng = iLng >= 0 && c[iLng] ? Number(c[iLng]) : null;
+    rows.push({
+      name: c[iName],
+      department: c[iDept],
+      address: c[iAddr],
+      city: c[iCity],
+      state: c[iState],
+      pincode: iPin >= 0 ? c[iPin] || null : null,
+      phone: iPhone >= 0 ? c[iPhone] || null : null,
+      email: iEmail >= 0 ? c[iEmail] || null : null,
+      latitude: Number.isFinite(lat as number) ? lat : null,
+      longitude: Number.isFinite(lng as number) ? lng : null,
+      hours: iHours >= 0 ? c[iHours] || null : null,
+    });
+  }
+  return rows;
+}
+
+function OfficeImportCard() {
+  const { t } = useI18n();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<{ inserted: number; updated: number; failed: number; errors: string[] } | null>(null);
+
+  const downloadSample = () => {
+    const blob = new Blob([SAMPLE_CSV], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "offices-sample.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const onFile = async (file: File) => {
+    setBusy(true);
+    setResult(null);
+    try {
+      const text = await file.text();
+      const rows = parseCSV(text);
+      if (rows.length === 0) throw new Error("No valid rows found");
+      const res = await importOffices({ data: { rows } });
+      setResult(res);
+      toast.success(`Import complete — ${res.inserted} added, ${res.updated} updated${res.failed ? `, ${res.failed} failed` : ""}`);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className="mt-6 gradient-card border border-border rounded-2xl p-6">
+      <h2 className="font-bold flex items-center gap-2"><Upload className="size-4 text-primary" /> {t("admin_import_offices")}</h2>
+      <p className="mt-2 text-sm text-muted-foreground">{t("admin_import_hint")}</p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={downloadSample} className="gap-2">
+          <Download className="size-4" /> {t("admin_import_download")}
+        </Button>
+        <Button size="sm" disabled={busy} onClick={() => inputRef.current?.click()} className="gap-2">
+          {busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+          {busy ? t("admin_import_running") : t("admin_import_upload")}
+        </Button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".csv,text/csv"
+          hidden
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void onFile(f);
+          }}
+        />
+      </div>
+      {result && (
+        <div className="mt-4 rounded-lg border border-border bg-background/60 p-4 text-sm">
+          <div className="flex flex-wrap gap-4">
+            <span>✅ Added: <b>{result.inserted}</b></span>
+            <span>♻️ Updated: <b>{result.updated}</b></span>
+            <span>❌ Failed: <b>{result.failed}</b></span>
+          </div>
+          {result.errors.length > 0 && (
+            <ul className="mt-3 space-y-1 text-xs text-destructive max-h-40 overflow-auto">
+              {result.errors.map((e, i) => <li key={i}>• {e}</li>)}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+

@@ -13,6 +13,7 @@ import { ClientOnly } from "@/components/ClientOnly";
 import { OfficeMap } from "@/components/OfficeMap";
 import { toast } from "sonner";
 import Fuse from "fuse.js";
+import { CENTER_TYPES, matchesCenter } from "@/lib/center-types";
 
 export const Route = createFileRoute("/offices")({ component: Offices });
 
@@ -37,6 +38,7 @@ function Offices() {
   const [q, setQ] = useState("");
   const [state, setState] = useState("all");
   const [department, setDepartment] = useState("all");
+  const [centerType, setCenterType] = useState<string>("all");
   const [view, setView] = useState<"list" | "map">("list");
   const [nearbyOnly, setNearbyOnly] = useState(false);
   const [userLoc, setUserLoc] = useState<[number, number] | null>(null);
@@ -46,6 +48,7 @@ function Offices() {
   const [manualOpen, setManualOpen] = useState(false);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
+  const autoTriedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
 
@@ -164,9 +167,11 @@ function Offices() {
   };
 
   const filtered = useMemo(() => {
+    const ct = centerType !== "all" ? CENTER_TYPES.find((c) => c.key === centerType) : null;
     let list = data.filter((o) => {
       if (state !== "all" && o.state !== state) return false;
       if (department !== "all" && o.department !== department) return false;
+      if (ct && !matchesCenter(o.department, ct)) return false;
       if (!q) return true;
       return `${o.name} ${o.department} ${o.address} ${o.city} ${o.state}`.toLowerCase().includes(q.toLowerCase());
     });
@@ -183,7 +188,23 @@ function Offices() {
       return nearbyOnly ? withDist.slice(0, 60) : withDist;
     }
     return list as (typeof list[number] & { distanceKm?: number })[];
-  }, [data, q, state, department, userLoc, nearbyOnly]);
+  }, [data, q, state, department, centerType, userLoc, nearbyOnly]);
+
+  // Auto-detect GPS once on mount (silent — falls back gracefully if denied).
+  useEffect(() => {
+    if (autoTriedRef.current || userLoc) return;
+    autoTriedRef.current = true;
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLoc([pos.coords.latitude, pos.coords.longitude]);
+        setAccuracy(pos.coords.accuracy ?? null);
+        setNearbyOnly(true);
+      },
+      () => { /* silent — user can click "Use my location" */ },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
+    );
+  }, [userLoc]);
 
   const mapPins = filtered
     .filter((o) => o.latitude != null && o.longitude != null)
@@ -360,6 +381,35 @@ function Offices() {
           >
             <MapIcon className="size-4" /> Map
           </button>
+        </div>
+      </div>
+
+      {/* Quick center-type filters */}
+      <div className="mt-4 -mx-1 overflow-x-auto">
+        <div className="flex gap-2 px-1 pb-1 min-w-max">
+          <button
+            onClick={() => setCenterType("all")}
+            className={`shrink-0 h-9 px-3 rounded-full border text-sm font-medium transition-colors ${
+              centerType === "all" ? "bg-primary text-primary-foreground border-primary" : "bg-background border-input hover:bg-accent"
+            }`}
+          >
+            {lang === "te" ? "అన్నీ" : "All centers"}
+          </button>
+          {CENTER_TYPES.map((c) => {
+            const active = centerType === c.key;
+            return (
+              <button
+                key={c.key}
+                onClick={() => setCenterType(active ? "all" : c.key)}
+                className={`shrink-0 h-9 px-3 rounded-full border text-sm font-medium transition-colors inline-flex items-center gap-1.5 ${
+                  active ? "bg-primary text-primary-foreground border-primary" : "bg-background border-input hover:bg-accent"
+                }`}
+              >
+                <span aria-hidden>{c.emoji}</span>
+                {c.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
