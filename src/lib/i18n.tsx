@@ -89,6 +89,17 @@ const dict = {
   why_3_t: "Verified info",
   why_3_d: "Eligibility, documents, fees and official portals in one place.",
   services_office_hint: "Visit your nearest MeeSeva, e-Sevai, CSC, Sewa Kendra, Jan Seva Kendra, or district government office to complete these services. Locations across small towns, tehsils and cities all over India are listed on the",
+  nearest_centers: "Nearest service centers",
+  nearest_centers_hint: "Closest MeeSeva, CSC, e-Sevai, e-Mitra, Akshaya, Sewa Kendra and other government service centers to your current location.",
+  enable_location_for_nearby: "Enable location to see the closest MeeSeva, CSC and other government service centers around you.",
+  use_my_location: "Use my location",
+  update_location: "Update location",
+  directions: "Directions",
+  admin_import_offices: "Import offices (CSV)",
+  admin_import_hint: "Upload a CSV to add or update office locations. Columns: name, department, address, city, state, pincode, phone, email, latitude, longitude, hours. Rows are matched on name + city + state.",
+  admin_import_download: "Download sample CSV",
+  admin_import_upload: "Upload CSV",
+  admin_import_running: "Importing…",
 } as const;
 
 export type Key = keyof typeof dict;
