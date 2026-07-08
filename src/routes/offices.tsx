@@ -9,8 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
-import { ClientOnly } from "@/components/ClientOnly";
-import { OfficeMap } from "@/components/OfficeMap";
+import { ClientOfficeMap as OfficeMap } from "@/components/ClientOfficeMap";
 import { toast } from "sonner";
 import Fuse from "fuse.js";
 import { CENTER_TYPES, matchesCenter } from "@/lib/center-types";

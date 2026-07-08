@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 import type { OfficePin } from "./OfficeMap";
 
 type OfficeMapProps = {
@@ -11,7 +11,7 @@ type OfficeMapProps = {
 };
 
 export function ClientOfficeMap(props: OfficeMapProps) {
-  const [MapComponent, setMapComponent] = useState<null | ((props: OfficeMapProps) => JSX.Element)>(null);
+  const [MapComponent, setMapComponent] = useState<null | ((props: OfficeMapProps) => ReactElement)>(null);
 
   useEffect(() => {
     let mounted = true;

@@ -8,8 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { isServiceCenter } from "@/lib/center-types";
 import { toast } from "sonner";
-import { ClientOnly } from "@/components/ClientOnly";
-import { OfficeMap } from "@/components/OfficeMap";
+import { ClientOfficeMap as OfficeMap } from "@/components/ClientOfficeMap";
 import { haversineKm, readSavedLocation, saveLocation } from "@/lib/location";
 
 export const Route = createFileRoute("/services")({ component: Services });
