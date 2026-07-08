@@ -16,7 +16,7 @@ export const translateDict = createServerFn({ method: "POST" })
     const keys = Object.keys(entries);
     if (keys.length === 0) return { translations: {} as Record<string, string> };
 
-    const system = `You are a professional UI localization engine. Translate each English UI string into ${data.targetLanguage} (native script). Keep translations concise, natural, and appropriate for a citizen-services mobile web app. Preserve placeholders like {name}, punctuation, emojis, and product names ("JanSahayak"). Return STRICT JSON only: an object mapping the same keys to translated strings. No commentary.`;
+    const system = `You are a professional UI localization engine. Translate each English UI string into ${data.targetLanguage} (native script). Keep translations concise, natural, and appropriate for a citizen-services mobile web app. Preserve placeholders like {name}, punctuation, emojis, and proper nouns/product/service-center names exactly as written: "JanSahayak", "MeeSeva", "CSC", "e-Sevai", "Akshaya", "e-Mitra", "Karnataka One", "Sewa Kendra", "Jan Seva Kendra", "Lok Seva", "Lok Mitra", "Antyodaya Saral", "RTO", "Aadhaar", "UIDAI". Return STRICT JSON only: an object mapping the same keys to translated strings. No commentary.`;
     const user = `Translate values into ${data.targetLanguage}. Keys must remain identical.\n\n${JSON.stringify(entries, null, 2)}`;
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
