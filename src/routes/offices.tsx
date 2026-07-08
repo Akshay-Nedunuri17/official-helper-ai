@@ -14,18 +14,10 @@ import { OfficeMap } from "@/components/OfficeMap";
 import { toast } from "sonner";
 import Fuse from "fuse.js";
 import { CENTER_TYPES, matchesCenter } from "@/lib/center-types";
+import { clearSavedLocation, haversineKm, readSavedLocation, saveLocation } from "@/lib/location";
+import type { Key } from "@/lib/i18n";
 
 export const Route = createFileRoute("/offices")({ component: Offices });
-
-function haversineKm(a: [number, number], b: [number, number]) {
-  const R = 6371;
-  const dLat = ((b[0] - a[0]) * Math.PI) / 180;
-  const dLng = ((b[1] - a[1]) * Math.PI) / 180;
-  const la1 = (a[0] * Math.PI) / 180;
-  const la2 = (b[0] * Math.PI) / 180;
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
 
 type Suggestion =
   | { kind: "office"; id: string; label: string; sub: string }
@@ -46,11 +38,17 @@ function Offices() {
   const [locating, setLocating] = useState(false);
   const [pickMode, setPickMode] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
+  const [locationLabel, setLocationLabel] = useState<string | null>(null);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
   const autoTriedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
+
+  const translatedCenterLabel = (key: string) => {
+    const ct = CENTER_TYPES.find((c) => c.key === key);
+    return ct?.labelKey ? t(ct.labelKey as Key) : ct?.label ?? key;
+  };
 
   const { data = [] } = useQuery({
     queryKey: ["offices"],
@@ -116,29 +114,26 @@ function Offices() {
 
   const requestLocation = () => {
     if (!navigator.geolocation) {
-      toast.error(lang === "te" ? "మీ బ్రౌజర్ స్థానాన్ని సపోర్ట్ చేయదు" : "Geolocation not supported");
+      toast.error(t("location_permission_denied"));
       setManualOpen(true);
       return;
     }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setUserLoc([pos.coords.latitude, pos.coords.longitude]);
-        setAccuracy(pos.coords.accuracy ?? null);
+        const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+        const acc = pos.coords.accuracy ?? null;
+        setUserLoc(loc);
+        setAccuracy(acc);
+        setLocationLabel("GPS location");
+        saveLocation({ lat: loc[0], lng: loc[1], accuracy: acc, label: "GPS location", source: "gps" });
         setNearbyOnly(true);
         setLocating(false);
-        const acc = pos.coords.accuracy;
-        toast.success(
-          lang === "te"
-            ? `సమీప కార్యాలయాలను చూపుతోంది (±${Math.round(acc)} మీ)`
-            : `Showing nearby offices (±${Math.round(acc)} m accuracy)`,
-        );
+        toast.success(`Showing nearby offices${acc ? ` (±${Math.round(acc)} m accuracy)` : ""}`);
       },
       (err) => {
         setLocating(false);
-        const msg = err.code === err.PERMISSION_DENIED
-          ? (lang === "te" ? "అనుమతి తిరస్కరించబడింది — మాన్యువల్‌గా సెట్ చేయండి" : "Permission denied — set location manually")
-          : err.message;
+        const msg = err.code === err.PERMISSION_DENIED ? t("location_permission_denied") : err.message;
         toast.error(msg);
         setManualOpen(true);
       },
@@ -153,6 +148,8 @@ function Offices() {
     }
     setUserLoc([sample.latitude, sample.longitude]);
     setAccuracy(5000);
+    setLocationLabel(`${cityName}, ${cityState}`);
+    saveLocation({ lat: sample.latitude, lng: sample.longitude, accuracy: 5000, label: `${cityName}, ${cityState}`, source: "manual" });
     setNearbyOnly(true);
     setManualOpen(false);
     toast.success(`Location set to ${cityName}, ${cityState}`);
@@ -161,9 +158,11 @@ function Offices() {
   const onMapPick = (lat: number, lng: number) => {
     setUserLoc([lat, lng]);
     setAccuracy(200);
+    setLocationLabel("Pinned location");
+    saveLocation({ lat, lng, accuracy: 200, label: "Pinned location", source: "map" });
     setNearbyOnly(true);
     setPickMode(false);
-    toast.success(lang === "te" ? "స్థానం సెట్ చేయబడింది" : "Location set");
+    toast.success("Location saved");
   };
 
   const filtered = useMemo(() => {
@@ -190,21 +189,36 @@ function Offices() {
     return list as (typeof list[number] & { distanceKm?: number })[];
   }, [data, q, state, department, centerType, userLoc, nearbyOnly]);
 
-  // Auto-detect GPS once on mount (silent — falls back gracefully if denied).
+  // Use saved location first, then try fresh GPS once on mount. Permission denial opens the manual fallback.
   useEffect(() => {
     if (autoTriedRef.current || userLoc) return;
     autoTriedRef.current = true;
+    const saved = readSavedLocation();
+    if (saved) {
+      setUserLoc([saved.lat, saved.lng]);
+      setAccuracy(saved.accuracy);
+      setLocationLabel(saved.label);
+      setNearbyOnly(true);
+      toast.info(t("saved_location_found"));
+      return;
+    }
     if (typeof navigator === "undefined" || !navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setUserLoc([pos.coords.latitude, pos.coords.longitude]);
-        setAccuracy(pos.coords.accuracy ?? null);
+        const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+        const acc = pos.coords.accuracy ?? null;
+        setUserLoc(loc);
+        setAccuracy(acc);
+        setLocationLabel("GPS location");
+        saveLocation({ lat: loc[0], lng: loc[1], accuracy: acc, label: "GPS location", source: "gps" });
         setNearbyOnly(true);
       },
-      () => { /* silent — user can click "Use my location" */ },
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) setManualOpen(true);
+      },
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
     );
-  }, [userLoc]);
+  }, [userLoc, t]);
 
   const mapPins = filtered
     .filter((o) => o.latitude != null && o.longitude != null)
@@ -213,6 +227,7 @@ function Offices() {
       city: o.city, latitude: o.latitude!, longitude: o.longitude!,
       distanceKm: (o as { distanceKm?: number }).distanceKm,
     }));
+  const nearestMapPins = mapPins.slice(0, 12);
 
   return (
     <div className="container mx-auto px-4 py-8 sm:py-10">
@@ -221,8 +236,8 @@ function Offices() {
           <h1 className="text-3xl sm:text-4xl font-bold">{t("nav_offices")}</h1>
           <p className="text-muted-foreground mt-2 text-sm sm:text-base">
             {lang === "en"
-              ? `Locate the nearest government office across India. ${data.length}+ offices indexed.`
-              : `భారతదేశం అంతటా సమీప ప్రభుత్వ కార్యాలయాన్ని కనుగొనండి. ${data.length}+ కార్యాలయాలు.`}
+              ? `Locate nearby MeeSeva, CSC and government offices across India. ${data.length}+ offices indexed.`
+              : `MeeSeva, CSC మరియు ప్రభుత్వ కార్యాలయాలను సమీపంలో కనుగొనండి. ${data.length}+ కార్యాలయాలు.`}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -233,13 +248,11 @@ function Offices() {
             className="gap-2"
           >
             {locating ? <Loader2 className="size-4 animate-spin" /> : <LocateFixed className="size-4" />}
-            {userLoc
-              ? lang === "te" ? "స్థానం నవీకరించు" : "Update location"
-              : lang === "te" ? "నా సమీపంలో" : "Use my location"}
+            {userLoc ? t("update_location") : t("use_my_location")}
           </Button>
           <Button variant="outline" onClick={() => setManualOpen((v) => !v)} className="gap-2">
             <Crosshair className="size-4" />
-            {lang === "te" ? "మాన్యువల్" : "Set manually"}
+            {t("set_location_manually")}
           </Button>
         </div>
       </div>
@@ -250,12 +263,10 @@ function Offices() {
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="font-semibold text-sm">
-                {lang === "te" ? "మీ స్థానాన్ని మాన్యువల్‌గా సెట్ చేయండి" : "Set your location manually"}
+                {t("set_location_manually")}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {lang === "te"
-                  ? "నగరాన్ని ఎంచుకోండి లేదా మ్యాప్‌పై టాప్ చేయండి."
-                  : "Pick a city or tap a point on the map."}
+                {t("manual_location_hint")}
               </p>
             </div>
             <button onClick={() => setManualOpen(false)} className="text-muted-foreground hover:text-foreground">
@@ -277,18 +288,18 @@ function Offices() {
               {states.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
             <select id="manual-city" className="h-10 px-3 rounded-md border border-input bg-background" defaultValue="">
-              <option value="" disabled>{lang === "te" ? "నగరం" : "Select city"}</option>
+              <option value="" disabled>{t("pick_city")}</option>
               {cities.map((c) => <option key={`${c.city}-${c.state}`} value={`${c.city}|${c.state}`}>{c.city} ({c.state})</option>)}
             </select>
             <Button
               onClick={() => {
                 const cityEl = document.getElementById("manual-city") as HTMLSelectElement;
-                if (!cityEl?.value) { toast.error("Pick a city"); return; }
+                if (!cityEl?.value) { toast.error(t("pick_city")); return; }
                 const [city, st] = cityEl.value.split("|");
                 setManualByCity(city, st);
               }}
             >
-              {lang === "te" ? "సెట్ చేయండి" : "Apply"}
+              {t("apply_location")}
             </Button>
           </div>
           <div className="mt-3">
@@ -299,7 +310,7 @@ function Offices() {
               onClick={() => { setPickMode(true); setView("map"); setManualOpen(false); }}
             >
               <MapIcon className="size-4" />
-              {lang === "te" ? "మ్యాప్‌పై టాప్ చేయండి" : "Tap on map"}
+              {t("tap_map_location")}
             </Button>
           </div>
         </div>
@@ -406,7 +417,7 @@ function Offices() {
                 }`}
               >
                 <span aria-hidden>{c.emoji}</span>
-                {c.label}
+                {translatedCenterLabel(c.key)}
               </button>
             );
           })}
@@ -417,24 +428,46 @@ function Offices() {
         <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary">
             <LocateFixed className="size-3.5" />
-            {lang === "te" ? "మీ స్థానంతో ర్యాంక్" : "Sorted by distance"}
+            {t("sorted_by_distance")}
             {accuracy != null && (
               <span className="ml-1 text-xs opacity-80">
                 ±{accuracy >= 1000 ? `${(accuracy / 1000).toFixed(1)} km` : `${Math.round(accuracy)} m`}
               </span>
             )}
+            {locationLabel && <span className="ml-1 text-xs opacity-80">· {locationLabel}</span>}
           </span>
           <label className="inline-flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={nearbyOnly} onChange={(e) => setNearbyOnly(e.target.checked)} />
-            {lang === "te" ? "సమీప 60 మాత్రమే" : "Nearby 60 only"}
+            {t("nearby_only")}
           </label>
           <button
-            onClick={() => { setUserLoc(null); setAccuracy(null); setNearbyOnly(false); }}
+            onClick={() => { setUserLoc(null); setAccuracy(null); setLocationLabel(null); setNearbyOnly(false); clearSavedLocation(); }}
             className="text-xs text-muted-foreground hover:text-foreground underline"
           >
-            {lang === "te" ? "క్లియర్" : "Clear location"}
+            {t("clear_location")}
           </button>
         </div>
+      )}
+
+      {userLoc && nearestMapPins.length > 0 && view === "list" && (
+        <section className="mt-5">
+          <h2 className="text-sm font-semibold mb-2 flex items-center gap-2">
+            <MapIcon className="size-4 text-primary" />
+            {t("mini_map_nearest")}
+          </h2>
+          <ClientOnly
+            fallback={<div className="h-[260px] rounded-2xl border border-border grid place-items-center text-muted-foreground">Loading map…</div>}
+          >
+            <OfficeMap
+              offices={nearestMapPins}
+              height={260}
+              userLocation={userLoc}
+              accuracyMeters={accuracy}
+              pickMode={pickMode}
+              onPickLocation={onMapPick}
+            />
+          </ClientOnly>
+        </section>
       )}
 
       {view === "map" ? (
@@ -456,7 +489,7 @@ function Offices() {
           </ClientOnly>
           <p className="text-xs text-muted-foreground mt-2">
             {mapPins.length} {lang === "te" ? "కార్యాలయాలు మ్యాప్‌లో" : "offices shown on map"}
-            {pickMode && " · Tap the map to set your location"}
+            {pickMode && ` · ${t("tap_map_location")}`}
           </p>
         </div>
       ) : (
@@ -490,7 +523,7 @@ function Offices() {
                     target="_blank" rel="noreferrer"
                     className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
                   >
-                    {lang === "te" ? "దిశలు" : "Directions"} <ExternalLink className="size-3" />
+                    {t("directions")} <ExternalLink className="size-3" />
                   </a>
                 )}
               </div>
