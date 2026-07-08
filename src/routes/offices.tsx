@@ -454,38 +454,26 @@ function Offices() {
             <MapIcon className="size-4 text-primary" />
             {t("mini_map_nearest")}
           </h2>
-          <ClientOnly
-            fallback={<div className="h-[260px] rounded-2xl border border-border grid place-items-center text-muted-foreground">Loading map…</div>}
-          >
-            <OfficeMap
-              offices={nearestMapPins}
-              height={260}
-              userLocation={userLoc}
-              accuracyMeters={accuracy}
-              pickMode={pickMode}
-              onPickLocation={onMapPick}
-            />
-          </ClientOnly>
+          <OfficeMap
+            offices={nearestMapPins}
+            height={260}
+            userLocation={userLoc}
+            accuracyMeters={accuracy}
+            pickMode={pickMode}
+            onPickLocation={onMapPick}
+          />
         </section>
       )}
 
       {view === "map" ? (
         <div className="mt-6">
-          <ClientOnly
-            fallback={
-              <div className="h-[480px] rounded-2xl border border-border grid place-items-center text-muted-foreground">
-                Loading map…
-              </div>
-            }
-          >
-            <OfficeMap
-              offices={mapPins}
-              userLocation={userLoc}
-              accuracyMeters={accuracy}
-              pickMode={pickMode}
-              onPickLocation={onMapPick}
-            />
-          </ClientOnly>
+          <OfficeMap
+            offices={mapPins}
+            userLocation={userLoc}
+            accuracyMeters={accuracy}
+            pickMode={pickMode}
+            onPickLocation={onMapPick}
+          />
           <p className="text-xs text-muted-foreground mt-2">
             {mapPins.length} {lang === "te" ? "కార్యాలయాలు మ్యాప్‌లో" : "offices shown on map"}
             {pickMode && ` · ${t("tap_map_location")}`}

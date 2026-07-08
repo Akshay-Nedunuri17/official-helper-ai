@@ -231,9 +231,7 @@ function Services() {
             </div>
             <div>
               <h3 className="text-sm font-semibold mb-2">{t("mini_map_nearest")}</h3>
-              <ClientOnly fallback={<div className="h-[320px] rounded-2xl border border-border grid place-items-center text-muted-foreground">Loading map…</div>}>
-                <OfficeMap offices={mapPins} height={320} userLocation={userLoc} accuracyMeters={accuracy} />
-              </ClientOnly>
+              <OfficeMap offices={mapPins} height={320} userLocation={userLoc} accuracyMeters={accuracy} />
             </div>
           </div>
         )}
