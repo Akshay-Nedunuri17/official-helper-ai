@@ -191,7 +191,7 @@ type ParsedRow = {
 
 function parseCSV(text: string): ParsedRow[] {
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-  if (lines.length < 2) return [];
+  if (lines.length < 2) throw new Error("CSV has no data rows. Add at least one office row below the header.");
   // Simple CSV split — supports quoted fields with commas.
   const splitLine = (line: string): string[] => {
     const out: string[] = [];
@@ -212,34 +212,61 @@ function parseCSV(text: string): ParsedRow[] {
     out.push(cur);
     return out.map((s) => s.trim());
   };
-  const headers = splitLine(lines[0]).map((h) => h.toLowerCase());
-  const idx = (k: string) => headers.indexOf(k);
+  const headers = splitLine(lines[0]).map((h) => h.toLowerCase().replace(/\s+/g, "_"));
+  const idx = (...keys: string[]) => keys.map((k) => headers.indexOf(k)).find((i) => i >= 0) ?? -1;
   const iName = idx("name"), iDept = idx("department"), iAddr = idx("address"),
     iCity = idx("city"), iState = idx("state"), iPin = idx("pincode"),
-    iPhone = idx("phone"), iEmail = idx("email"), iLat = idx("latitude"),
-    iLng = idx("longitude"), iHours = idx("hours");
-  if ([iName, iDept, iAddr, iCity, iState].some((i) => i === -1)) {
-    throw new Error("CSV must include columns: name, department, address, city, state");
+    iPhone = idx("phone"), iEmail = idx("email"), iLat = idx("latitude", "lat"),
+    iLng = idx("longitude", "lng", "lon", "long"), iHours = idx("hours", "timings");
+  const missingHeaders = [
+    ["name", iName], ["city", iCity], ["state", iState], ["latitude/lat", iLat], ["longitude/lng", iLng],
+  ].filter(([, i]) => i === -1).map(([k]) => k);
+  if (missingHeaders.length > 0) {
+    throw new Error(`CSV is missing required column${missingHeaders.length > 1 ? "s" : ""}: ${missingHeaders.join(", ")}.`);
   }
   const rows: ParsedRow[] = [];
+  const errors: string[] = [];
   for (let i = 1; i < lines.length; i++) {
     const c = splitLine(lines[i]);
-    if (!c[iName] || !c[iCity] || !c[iState]) continue;
-    const lat = iLat >= 0 && c[iLat] ? Number(c[iLat]) : null;
-    const lng = iLng >= 0 && c[iLng] ? Number(c[iLng]) : null;
+    const lineNo = i + 1;
+    const rowErrors: string[] = [];
+    const name = c[iName]?.trim();
+    const city = c[iCity]?.trim();
+    const state = c[iState]?.trim();
+    const latRaw = c[iLat]?.trim();
+    const lngRaw = c[iLng]?.trim();
+    const lat = latRaw ? Number(latRaw) : NaN;
+    const lng = lngRaw ? Number(lngRaw) : NaN;
+
+    if (!name) rowErrors.push("missing name");
+    if (!city) rowErrors.push("missing city");
+    if (!state) rowErrors.push("missing state");
+    if (!latRaw) rowErrors.push("missing latitude/lat");
+    else if (!Number.isFinite(lat) || lat < -90 || lat > 90) rowErrors.push(`invalid latitude '${latRaw}'`);
+    if (!lngRaw) rowErrors.push("missing longitude/lng");
+    else if (!Number.isFinite(lng) || lng < -180 || lng > 180) rowErrors.push(`invalid longitude '${lngRaw}'`);
+
+    if (rowErrors.length > 0) {
+      errors.push(`Row ${lineNo}: ${rowErrors.join(", ")}`);
+      continue;
+    }
+
     rows.push({
-      name: c[iName],
-      department: c[iDept],
-      address: c[iAddr],
-      city: c[iCity],
-      state: c[iState],
+      name,
+      department: iDept >= 0 && c[iDept]?.trim() ? c[iDept].trim() : "Government Service Center",
+      address: iAddr >= 0 && c[iAddr]?.trim() ? c[iAddr].trim() : `${city}, ${state}`,
+      city,
+      state,
       pincode: iPin >= 0 ? c[iPin] || null : null,
       phone: iPhone >= 0 ? c[iPhone] || null : null,
       email: iEmail >= 0 ? c[iEmail] || null : null,
-      latitude: Number.isFinite(lat as number) ? lat : null,
-      longitude: Number.isFinite(lng as number) ? lng : null,
+      latitude: lat,
+      longitude: lng,
       hours: iHours >= 0 ? c[iHours] || null : null,
     });
+  }
+  if (errors.length > 0) {
+    throw new Error(`Fix these CSV errors before importing:\n${errors.slice(0, 30).join("\n")}${errors.length > 30 ? `\n…and ${errors.length - 30} more rows` : ""}`);
   }
   return rows;
 }
@@ -271,7 +298,9 @@ function OfficeImportCard() {
       setResult(res);
       toast.success(`Import complete — ${res.inserted} added, ${res.updated} updated${res.failed ? `, ${res.failed} failed` : ""}`);
     } catch (e) {
-      toast.error((e as Error).message);
+      const message = (e as Error).message;
+      setResult({ inserted: 0, updated: 0, failed: 0, errors: message.split("\n").filter(Boolean) });
+      toast.error(message.split("\n")[0]);
     } finally {
       setBusy(false);
       if (inputRef.current) inputRef.current.value = "";

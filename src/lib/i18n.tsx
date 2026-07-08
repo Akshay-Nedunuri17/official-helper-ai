@@ -94,12 +94,41 @@ const dict = {
   enable_location_for_nearby: "Enable location to see the closest MeeSeva, CSC and other government service centers around you.",
   use_my_location: "Use my location",
   update_location: "Update location",
+  set_location_manually: "Set location manually",
+  location_permission_denied: "GPS permission was denied. Choose a city or tap the mini map to set your location manually.",
+  saved_location_found: "Using your saved location. Update it if you have moved.",
+  manual_location_hint: "Choose the nearest city/town or tap a point on the map. This location is saved for next time.",
+  pick_city: "Pick a city or town",
+  apply_location: "Apply location",
+  tap_map_location: "Tap map to set location",
+  mini_map_nearest: "Nearest centers map",
+  sorted_by_distance: "Sorted by distance",
+  nearby_only: "Nearby only",
+  clear_location: "Clear saved location",
   directions: "Directions",
   admin_import_offices: "Import offices (CSV)",
-  admin_import_hint: "Upload a CSV to add or update office locations. Columns: name, department, address, city, state, pincode, phone, email, latitude, longitude, hours. Rows are matched on name + city + state.",
+  admin_import_hint: "Upload a CSV to add or update office locations. Required columns: name, city, state, latitude, longitude. Recommended: department, address, pincode, phone, email, hours. Rows are matched on name + city + state.",
   admin_import_download: "Download sample CSV",
   admin_import_upload: "Upload CSV",
   admin_import_running: "Importing…",
+  center_meeseva: "MeeSeva",
+  center_csc: "CSC",
+  center_esevai: "e-Sevai",
+  center_akshaya: "Akshaya",
+  center_emitra: "e-Mitra",
+  center_karnatakaone: "Karnataka One",
+  center_sewa: "Sewa Kendra",
+  center_janseva: "Jan Seva Kendra",
+  center_lokseva: "Lok Seva / Lok Mitra",
+  center_saral: "Antyodaya Saral",
+  center_rto: "RTO",
+  center_revenue: "Revenue / Tahsildar",
+  center_municipal: "Municipal / ULB",
+  center_hospital: "Hospital / PHC",
+  center_aadhaar: "Aadhaar / UIDAI",
+  center_passport: "Passport",
+  center_employment: "Employment",
+  center_agriculture: "Agriculture",
 } as const;
 
 export type Key = keyof typeof dict;
@@ -113,7 +142,7 @@ interface I18nCtx {
 
 const Ctx = createContext<I18nCtx | null>(null);
 
-const CACHE_PREFIX = "js_i18n_v2_";
+const CACHE_PREFIX = "js_i18n_v3_";
 const cacheKey = (lang: Lang) => `${CACHE_PREFIX}${lang}`;
 
 function readCache(lang: Lang): Record<string, string> | null {
