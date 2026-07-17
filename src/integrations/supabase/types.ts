@@ -357,6 +357,48 @@ export type Database = {
         }
         Relationships: []
       }
+      translate_audit_logs: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          entries_count: number
+          error: string | null
+          id: string
+          ip: string | null
+          status: string
+          target_language: string
+          total_chars: number
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          entries_count: number
+          error?: string | null
+          id?: string
+          ip?: string | null
+          status?: string
+          target_language: string
+          total_chars: number
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          entries_count?: number
+          error?: string | null
+          id?: string
+          ip?: string | null
+          status?: string
+          target_language?: string
+          total_chars?: number
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
