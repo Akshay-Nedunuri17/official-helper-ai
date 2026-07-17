@@ -1,0 +1,31 @@
+name: Security guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  translate-auth-guard:
+    name: Verify translate endpoint requires authentication
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # Fast static check — fails the build if requireSupabaseAuth is removed
+      # from the translate server function.
+      - name: Static guard
+        run: bun run security:guard
+
+      # Regression tests: same invariant checked via Vitest, plus size-limit
+      # and single-export sanity checks.
+      - name: Run security regression tests
+        run: bun run test -- tests/translate-auth.test.ts
