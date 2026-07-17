@@ -1,14 +1,21 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const Input = z.object({
-  targetLanguage: z.string().min(2).max(40), // display name, e.g. "Hindi"
-  entries: z.record(z.string(), z.string()), // key -> English source string
+  targetLanguage: z.string().trim().min(2).max(40),
+  entries: z
+    .record(z.string().min(1).max(80), z.string().min(1).max(500))
+    .refine((r) => Object.keys(r).length <= 200, {
+      message: "Too many entries (max 200 per request).",
+    }),
 });
 
 export const translateDict = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data }) => {
+
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
