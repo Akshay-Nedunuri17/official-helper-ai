@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const Profile = z.object({
   age: z.number().int().min(0).max(120).optional(),
@@ -11,7 +12,15 @@ const Profile = z.object({
 }).optional();
 
 const Input = z.object({
-  messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string() })),
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string().min(1).max(4000),
+      }),
+    )
+    .min(1)
+    .max(40),
   lang: z.string().min(2).max(8).default("en"),
   langName: z.string().min(2).max(40).optional(),
   profile: Profile,
@@ -19,8 +28,10 @@ const Input = z.object({
 
 
 export const chatAI = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data }) => {
+
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
