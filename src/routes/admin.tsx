@@ -3,76 +3,38 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { ShieldAlert, Users, FileText, MapPin, Building2, TrendingUp, Search as SearchIcon, MessageSquareWarning, Upload, Download, Loader2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { importOffices } from "@/lib/office-import.functions";
+import { getAdminDashboard } from "@/lib/admin.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({ component: Admin });
 
 function Admin() {
   const { t } = useI18n();
-  const { user, isAdmin, loading } = useAuth();
+  const { user, loading } = useAuth();
   const nav = useNavigate();
 
   useEffect(() => { if (!loading && !user) nav({ to: "/auth" }); }, [user, loading, nav]);
 
-  const { data: stats } = useQuery({
-    queryKey: ["admin-stats"],
-    enabled: !!user && isAdmin,
-    queryFn: async () => {
-      const [s, sv, o, p, c, v, sl] = await Promise.all([
-        supabase.from("schemes").select("id", { count: "exact", head: true }),
-        supabase.from("services").select("id", { count: "exact", head: true }),
-        supabase.from("offices").select("id", { count: "exact", head: true }),
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("complaints").select("id", { count: "exact", head: true }),
-        supabase.from("scheme_views").select("id", { count: "exact", head: true }),
-        supabase.from("search_logs").select("id", { count: "exact", head: true }),
-      ]);
-      return { schemes: s.count ?? 0, services: sv.count ?? 0, offices: o.count ?? 0, users: p.count ?? 0, complaints: c.count ?? 0, views: v.count ?? 0, searches: sl.count ?? 0 };
-    },
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["admin-dashboard"],
+    enabled: !!user,
+    retry: false,
+    queryFn: () => getAdminDashboard(),
   });
 
-  const { data: topSchemes = [] } = useQuery({
-    queryKey: ["admin-top-schemes"],
-    enabled: !!user && isAdmin,
-    queryFn: async () => {
-      const { data: views } = await supabase.from("scheme_views").select("scheme_id");
-      const counts = new Map<string, number>();
-      (views ?? []).forEach((v) => counts.set(v.scheme_id, (counts.get(v.scheme_id) ?? 0) + 1));
-      const top = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 8);
-      if (top.length === 0) return [];
-      const { data: schemes } = await supabase.from("schemes").select("id, name_en").in("id", top.map(([id]) => id));
-      return top.map(([id, count]) => ({ name: (schemes ?? []).find((s) => s.id === id)?.name_en?.slice(0, 28) ?? "—", views: count }));
-    },
-  });
+  const stats = data?.stats;
+  const topSchemes = data?.topSchemes ?? [];
+  const topSearches = data?.topSearches ?? [];
+  const recentComplaints = data?.recentComplaints ?? [];
 
-  const { data: topSearches = [] } = useQuery({
-    queryKey: ["admin-top-searches"],
-    enabled: !!user && isAdmin,
-    queryFn: async () => {
-      const { data } = await supabase.from("search_logs").select("query").order("created_at", { ascending: false }).limit(500);
-      const counts = new Map<string, number>();
-      (data ?? []).forEach((r) => {
-        const k = r.query.toLowerCase().trim();
-        counts.set(k, (counts.get(k) ?? 0) + 1);
-      });
-      return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([term, count]) => ({ term, count }));
-    },
-  });
+  if (loading || isLoading) return null;
 
-  const { data: recentComplaints = [] } = useQuery({
-    queryKey: ["admin-complaints"],
-    enabled: !!user && isAdmin,
-    queryFn: async () => (await supabase.from("complaints").select("id, tracking_number, title, category, status, created_at").order("created_at", { ascending: false }).limit(8)).data ?? [],
-  });
-
-  if (loading) return null;
-
-  if (!isAdmin) {
+  // Server-side role check: any auth/authorization failure hides the admin UI.
+  if (error) {
     return (
       <div className="container mx-auto px-4 py-20 max-w-md text-center">
         <ShieldAlert className="size-12 mx-auto text-destructive" />
@@ -83,6 +45,7 @@ function Admin() {
       </div>
     );
   }
+
 
   const cards = [
     { I: FileText, l: "Schemes", v: stats?.schemes },
