@@ -14,6 +14,7 @@ import { useTheme } from "@/lib/theme";
 import { useI18n, LANGUAGES } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export function Header() {
   const { theme, toggle } = useTheme();
@@ -32,6 +33,7 @@ export function Header() {
     { to: "/services", label: t("nav_services") },
     { to: "/offices", label: t("nav_offices") },
     { to: "/complaints", label: t("nav_complaints") },
+    { to: "/track", label: "Track" },
   ];
   if (user) links.push({ to: "/dashboard", label: t("nav_dashboard") });
   if (isAdmin) links.push({ to: "/admin", label: t("nav_admin") });
@@ -83,7 +85,10 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          <NotificationBell />
+
           <Button variant="ghost" size="icon" onClick={toggle} aria-label="theme">
+
             {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </Button>
 

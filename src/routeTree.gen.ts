@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WizardRouteImport } from './routes/wizard'
 import { Route as UpdatesRouteImport } from './routes/updates'
+import { Route as TrackRouteImport } from './routes/track'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SchemesRouteImport } from './routes/schemes'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as OfficesRouteImport } from './routes/offices'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ComplaintsRouteImport } from './routes/complaints'
@@ -31,6 +33,11 @@ const UpdatesRoute = UpdatesRouteImport.update({
   path: '/updates',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrackRoute = TrackRouteImport.update({
+  id: '/track',
+  path: '/track',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
   path: '/services',
@@ -39,6 +46,11 @@ const ServicesRoute = ServicesRouteImport.update({
 const SchemesRoute = SchemesRouteImport.update({
   id: '/schemes',
   path: '/schemes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OfficesRoute = OfficesRouteImport.update({
@@ -85,8 +97,10 @@ export interface FileRoutesByFullPath {
   '/complaints': typeof ComplaintsRoute
   '/dashboard': typeof DashboardRoute
   '/offices': typeof OfficesRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/schemes': typeof SchemesRoute
   '/services': typeof ServicesRoute
+  '/track': typeof TrackRoute
   '/updates': typeof UpdatesRoute
   '/wizard': typeof WizardRoute
 }
@@ -98,8 +112,10 @@ export interface FileRoutesByTo {
   '/complaints': typeof ComplaintsRoute
   '/dashboard': typeof DashboardRoute
   '/offices': typeof OfficesRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/schemes': typeof SchemesRoute
   '/services': typeof ServicesRoute
+  '/track': typeof TrackRoute
   '/updates': typeof UpdatesRoute
   '/wizard': typeof WizardRoute
 }
@@ -112,8 +128,10 @@ export interface FileRoutesById {
   '/complaints': typeof ComplaintsRoute
   '/dashboard': typeof DashboardRoute
   '/offices': typeof OfficesRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/schemes': typeof SchemesRoute
   '/services': typeof ServicesRoute
+  '/track': typeof TrackRoute
   '/updates': typeof UpdatesRoute
   '/wizard': typeof WizardRoute
 }
@@ -127,8 +145,10 @@ export interface FileRouteTypes {
     | '/complaints'
     | '/dashboard'
     | '/offices'
+    | '/reset-password'
     | '/schemes'
     | '/services'
+    | '/track'
     | '/updates'
     | '/wizard'
   fileRoutesByTo: FileRoutesByTo
@@ -140,8 +160,10 @@ export interface FileRouteTypes {
     | '/complaints'
     | '/dashboard'
     | '/offices'
+    | '/reset-password'
     | '/schemes'
     | '/services'
+    | '/track'
     | '/updates'
     | '/wizard'
   id:
@@ -153,8 +175,10 @@ export interface FileRouteTypes {
     | '/complaints'
     | '/dashboard'
     | '/offices'
+    | '/reset-password'
     | '/schemes'
     | '/services'
+    | '/track'
     | '/updates'
     | '/wizard'
   fileRoutesById: FileRoutesById
@@ -167,8 +191,10 @@ export interface RootRouteChildren {
   ComplaintsRoute: typeof ComplaintsRoute
   DashboardRoute: typeof DashboardRoute
   OfficesRoute: typeof OfficesRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SchemesRoute: typeof SchemesRoute
   ServicesRoute: typeof ServicesRoute
+  TrackRoute: typeof TrackRoute
   UpdatesRoute: typeof UpdatesRoute
   WizardRoute: typeof WizardRoute
 }
@@ -189,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UpdatesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/track': {
+      id: '/track'
+      path: '/track'
+      fullPath: '/track'
+      preLoaderRoute: typeof TrackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/services': {
       id: '/services'
       path: '/services'
@@ -201,6 +234,13 @@ declare module '@tanstack/react-router' {
       path: '/schemes'
       fullPath: '/schemes'
       preLoaderRoute: typeof SchemesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/offices': {
@@ -263,8 +303,10 @@ const rootRouteChildren: RootRouteChildren = {
   ComplaintsRoute: ComplaintsRoute,
   DashboardRoute: DashboardRoute,
   OfficesRoute: OfficesRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SchemesRoute: SchemesRoute,
   ServicesRoute: ServicesRoute,
+  TrackRoute: TrackRoute,
   UpdatesRoute: UpdatesRoute,
   WizardRoute: WizardRoute,
 }
