@@ -85,7 +85,10 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          <NotificationBell />
+
           <Button variant="ghost" size="icon" onClick={toggle} aria-label="theme">
+
             {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </Button>
 
