@@ -127,9 +127,28 @@ function Auth() {
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div>
-              <Label>{t("password")}</Label>
+              <div className="flex items-center justify-between">
+                <Label>{t("password")}</Label>
+                {mode === "signin" && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!email) return toast.error("Enter your email first");
+                      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                        redirectTo: `${window.location.origin}/reset-password`,
+                      });
+                      if (error) toast.error(error.message);
+                      else toast.success(`Password reset link sent to ${email}`);
+                    }}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
               <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
+
 
             {needsConfirm && (
               <div role="alert" className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
