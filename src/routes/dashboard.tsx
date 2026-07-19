@@ -48,6 +48,11 @@ function Dashboard() {
 
       <EmailVerificationBanner user={user} />
 
+      <div className="mt-8">
+        <ProfileEditor userId={user.id} />
+      </div>
+
+
 
       <div className="mt-10">
         <h2 className="text-xl font-bold flex items-center gap-2"><Heart className="size-5 text-destructive" /> {t("favorites")}</h2>
