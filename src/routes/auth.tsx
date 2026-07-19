@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Sparkles } from "lucide-react";
+import { Sparkles, MailWarning } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -22,28 +22,65 @@ function Auth() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [needsConfirm, setNeedsConfirm] = useState(false);
+  const [resending, setResending] = useState(false);
 
   useEffect(() => { if (user) nav({ to: "/dashboard" }); }, [user, nav]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setNeedsConfirm(false);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email, password,
           options: { emailRedirectTo: window.location.origin, data: { full_name: name } },
         });
         if (error) throw error;
-        toast.success("Account created!");
+        if (data.user && !data.session) {
+          setNeedsConfirm(true);
+          toast.success("Account created! Please check your email to confirm.");
+        } else {
+          toast.success("Account created!");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          const msg = (error.message || "").toLowerCase();
+          const code = (error as any).code;
+          if (code === "email_not_confirmed" || msg.includes("not confirmed") || msg.includes("confirm")) {
+            setNeedsConfirm(true);
+            throw new Error("Your email is not confirmed yet. Please check your inbox or resend the confirmation email.");
+          }
+          if (msg.includes("invalid login") || msg.includes("invalid credentials")) {
+            // Could be wrong password OR unconfirmed email — surface both possibilities
+            setNeedsConfirm(true);
+            throw new Error("Invalid credentials. If you just signed up, your email may need to be confirmed first — use 'Resend confirmation email' below.");
+          }
+          throw error;
+        }
         toast.success("Welcome back!");
       }
     } catch (e: any) {
       toast.error(e.message ?? "Something went wrong");
     } finally { setLoading(false); }
+  };
+
+  const resendConfirmation = async () => {
+    if (!email) { toast.error("Enter your email first"); return; }
+    setResending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo: window.location.origin },
+      });
+      if (error) throw error;
+      toast.success(`Confirmation email sent to ${email}`);
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to resend");
+    } finally { setResending(false); }
   };
 
   const google = async () => {
@@ -63,7 +100,7 @@ function Auth() {
       </div>
 
       <div className="gradient-card rounded-2xl border border-border p-6 shadow-elegant">
-        <Tabs value={mode} onValueChange={(v) => setMode(v as any)}>
+        <Tabs value={mode} onValueChange={(v) => { setMode(v as any); setNeedsConfirm(false); }}>
           <TabsList className="grid grid-cols-2 w-full">
             <TabsTrigger value="signin">{t("signin")}</TabsTrigger>
             <TabsTrigger value="signup">{t("signup")}</TabsTrigger>
@@ -93,6 +130,31 @@ function Auth() {
               <Label>{t("password")}</Label>
               <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
+
+            {needsConfirm && (
+              <div role="alert" className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+                <div className="flex items-start gap-2">
+                  <MailWarning className="size-4 mt-0.5 text-amber-600 shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-medium text-amber-900 dark:text-amber-200">Email confirmation required</p>
+                    <p className="mt-1 text-amber-800/90 dark:text-amber-200/80">
+                      Your account exists but the email address hasn't been verified yet. Check your inbox (and spam folder) for the confirmation link, or resend it below.
+                    </p>
+                    <Button
+                      type="button"
+                      onClick={resendConfirmation}
+                      disabled={resending}
+                      variant="outline"
+                      size="sm"
+                      className="mt-3"
+                    >
+                      {resending ? "Sending..." : "Resend confirmation email"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <Button type="submit" disabled={loading} className="w-full gradient-hero text-primary-foreground border-0">
               {mode === "signin" ? t("signin") : t("signup")}
             </Button>
