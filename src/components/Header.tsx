@@ -14,6 +14,7 @@ import { useTheme } from "@/lib/theme";
 import { useI18n, LANGUAGES } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export function Header() {
   const { theme, toggle } = useTheme();
