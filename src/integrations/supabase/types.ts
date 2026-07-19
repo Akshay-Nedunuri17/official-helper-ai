@@ -94,6 +94,39 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string | null
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string | null
+          read?: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string | null
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       offices: {
         Row: {
           address: string
@@ -144,27 +177,51 @@ export type Database = {
       }
       profiles: {
         Row: {
+          age: number | null
+          annual_income: number | null
+          caste_category: string | null
           created_at: string
+          district: string | null
           email: string | null
           full_name: string | null
+          gender: string | null
           id: string
+          occupation: string | null
+          phone: string | null
           preferred_language: string
+          state: string | null
           updated_at: string
         }
         Insert: {
+          age?: number | null
+          annual_income?: number | null
+          caste_category?: string | null
           created_at?: string
+          district?: string | null
           email?: string | null
           full_name?: string | null
+          gender?: string | null
           id: string
+          occupation?: string | null
+          phone?: string | null
           preferred_language?: string
+          state?: string | null
           updated_at?: string
         }
         Update: {
+          age?: number | null
+          annual_income?: number | null
+          caste_category?: string | null
           created_at?: string
+          district?: string | null
           email?: string | null
           full_name?: string | null
+          gender?: string | null
           id?: string
+          occupation?: string | null
+          phone?: string | null
           preferred_language?: string
+          state?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -422,6 +479,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_complaint_status: {
+        Args: { _tracking: string }
+        Returns: {
+          admin_response: string
+          category: string
+          created_at: string
+          status: string
+          title: string
+          tracking_number: string
+          updated_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
