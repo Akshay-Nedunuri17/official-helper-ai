@@ -71,3 +71,51 @@ function Dashboard() {
     </div>
   );
 }
+
+function EmailVerificationBanner({ user }: { user: any }) {
+  const isConfirmed = !!(user.email_confirmed_at || user.confirmed_at);
+  const [sending, setSending] = useState(false);
+
+  const resend = async () => {
+    setSending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: user.email,
+        options: { emailRedirectTo: window.location.origin + "/dashboard" },
+      });
+      if (error) throw error;
+      toast.success(`Confirmation email sent to ${user.email}`);
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to resend");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (isConfirmed) {
+    return (
+      <div className="mt-6 flex items-center gap-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-800 dark:text-emerald-200">
+        <MailCheck className="size-4" />
+        <span>Email verified</span>
+      </div>
+    );
+  }
+
+  return (
+    <div role="alert" className="mt-6 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm">
+      <div className="flex items-start gap-3">
+        <MailWarning className="size-5 mt-0.5 text-amber-600 shrink-0" />
+        <div className="flex-1">
+          <p className="font-semibold text-amber-900 dark:text-amber-200">Email not verified</p>
+          <p className="mt-1 text-amber-800/90 dark:text-amber-200/80">
+            We sent a confirmation link to <strong>{user.email}</strong>. Please verify your email to secure your account and unlock all features.
+          </p>
+          <Button onClick={resend} disabled={sending} variant="outline" size="sm" className="mt-3">
+            {sending ? "Sending..." : "Resend verification email"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
