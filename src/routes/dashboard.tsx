@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { Heart, User as UserIcon, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Heart, User as UserIcon, Sparkles, MailCheck, MailWarning } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard")({ component: Dashboard });
 
