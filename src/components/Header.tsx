@@ -33,6 +33,7 @@ export function Header() {
     { to: "/services", label: t("nav_services") },
     { to: "/offices", label: t("nav_offices") },
     { to: "/complaints", label: t("nav_complaints") },
+    { to: "/helplines", label: "Helplines" },
     { to: "/track", label: "Track" },
   ];
   if (user) links.push({ to: "/dashboard", label: t("nav_dashboard") });
