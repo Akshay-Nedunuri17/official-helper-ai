@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { ProfileEditor } from "@/components/ProfileEditor";
+import { NotificationPreferences } from "@/components/NotificationPreferences";
 
 export const Route = createFileRoute("/dashboard")({ component: Dashboard });
 
