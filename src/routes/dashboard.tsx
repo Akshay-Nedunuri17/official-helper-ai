@@ -50,8 +50,9 @@ function Dashboard() {
 
       <EmailVerificationBanner user={user} />
 
-      <div className="mt-8">
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <ProfileEditor userId={user.id} />
+        <NotificationPreferences userId={user.id} />
       </div>
 
 
