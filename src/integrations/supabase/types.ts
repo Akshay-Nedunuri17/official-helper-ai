@@ -186,6 +186,7 @@ export type Database = {
           full_name: string | null
           gender: string | null
           id: string
+          notification_prefs: Json
           occupation: string | null
           phone: string | null
           preferred_language: string
@@ -202,6 +203,7 @@ export type Database = {
           full_name?: string | null
           gender?: string | null
           id: string
+          notification_prefs?: Json
           occupation?: string | null
           phone?: string | null
           preferred_language?: string
@@ -218,6 +220,7 @@ export type Database = {
           full_name?: string | null
           gender?: string | null
           id?: string
+          notification_prefs?: Json
           occupation?: string | null
           phone?: string | null
           preferred_language?: string
