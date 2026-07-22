@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { ProfileEditor } from "@/components/ProfileEditor";
+import { NotificationPreferences } from "@/components/NotificationPreferences";
 
 export const Route = createFileRoute("/dashboard")({ component: Dashboard });
 
@@ -49,8 +50,9 @@ function Dashboard() {
 
       <EmailVerificationBanner user={user} />
 
-      <div className="mt-8">
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <ProfileEditor userId={user.id} />
+        <NotificationPreferences userId={user.id} />
       </div>
 
 
