@@ -34,8 +34,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Outfit", "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-sans: "Figtree", system-ui, sans-serif;
 }
 
 :root {
@@ -106,6 +106,13 @@
   * { border-color: var(--color-border); }
   html, body { background-color: var(--color-background); color: var(--color-foreground); font-family: var(--font-sans); }
   h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
+  /* Comfortable reading rhythm */
+  p { line-height: 1.65; }
+  /* Always-visible focus ring for keyboard users */
+  :focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
 }
 
 @utility gradient-hero { background-image: var(--gradient-hero); }

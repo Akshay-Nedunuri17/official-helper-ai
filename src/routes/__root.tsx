@@ -65,7 +65,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7776896b-46f5-4f41-af71-5ca40c2c2c0e/id-preview-e0a6f189--f90155ed-bd9b-42d8-8e64-b42a94581d14.lovable.app-1781231436055.png" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Figtree:wght@400;500;600;700&display=swap" },
+      { rel: "stylesheet", href: appCss },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -105,8 +110,14 @@ function RootComponent() {
         <I18nProvider>
           <AuthProvider>
             <div className="min-h-screen flex flex-col">
+              <a
+                href="#main"
+                className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+              >
+                Skip to main content
+              </a>
               <Header />
-              <main className="flex-1">
+              <main id="main" className="flex-1 pb-20 lg:pb-0">
                 <Outlet />
               </main>
               <Footer />
