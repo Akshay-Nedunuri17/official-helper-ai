@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { importOffices } from "@/lib/office-import.functions";
 import { getAdminDashboard } from "@/lib/admin.functions";
+import { verifyAdmin } from "@/lib/admin-guard.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({ component: Admin });
@@ -19,9 +20,16 @@ function Admin() {
 
   useEffect(() => { if (!loading && !user) nav({ to: "/auth" }); }, [user, loading, nav]);
 
+  const { data: adminCheck, isLoading: checking, error: adminError } = useQuery({
+    queryKey: ["admin-guard"],
+    enabled: !!user,
+    retry: false,
+    queryFn: () => verifyAdmin(),
+  });
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin-dashboard"],
-    enabled: !!user,
+    enabled: !!user && !!adminCheck?.isAdmin,
     retry: false,
     queryFn: () => getAdminDashboard(),
   });
@@ -31,10 +39,10 @@ function Admin() {
   const topSearches = data?.topSearches ?? [];
   const recentComplaints = data?.recentComplaints ?? [];
 
-  if (loading || isLoading) return null;
+  if (loading || checking || (!!adminCheck?.isAdmin && isLoading)) return null;
 
   // Server-side role check: any auth/authorization failure hides the admin UI.
-  if (error) {
+  if (adminError || error) {
     return (
       <div className="container mx-auto px-4 py-20 max-w-md text-center">
         <ShieldAlert className="size-12 mx-auto text-destructive" />
