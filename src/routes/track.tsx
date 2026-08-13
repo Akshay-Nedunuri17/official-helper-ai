@@ -4,7 +4,7 @@ import { Search, CheckCircle2, Clock, AlertCircle, Loader2, Hash } from "lucide-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import { trackComplaint } from "@/lib/track.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/track")({ component: Track });
@@ -40,11 +40,9 @@ function Track() {
     setResult(null);
     setNotFound(false);
     try {
-      const { data, error } = await supabase.rpc("get_complaint_status", { _tracking: t });
-      if (error) throw error;
-      const row = Array.isArray(data) ? data[0] : data;
-      if (!row) setNotFound(true);
-      else setResult(row as StatusRow);
+      const { complaint } = await trackComplaint({ data: { tracking: t.toUpperCase() } });
+      if (!complaint) setNotFound(true);
+      else setResult(complaint as StatusRow);
     } catch (e: any) {
       toast.error(e.message ?? "Lookup failed");
     } finally { setLoading(false); }
