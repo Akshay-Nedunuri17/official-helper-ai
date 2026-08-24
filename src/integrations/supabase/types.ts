@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      complaint_events: {
+        Row: {
+          complaint_id: string
+          created_at: string
+          detail: string | null
+          event_type: string
+          id: string
+          title: string
+        }
+        Insert: {
+          complaint_id: string
+          created_at?: string
+          detail?: string | null
+          event_type: string
+          id?: string
+          title: string
+        }
+        Update: {
+          complaint_id?: string
+          created_at?: string
+          detail?: string | null
+          event_type?: string
+          id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaint_events_complaint_id_fkey"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       complaints: {
         Row: {
           address: string | null
@@ -21,10 +56,19 @@ export type Database = {
           category: string
           created_at: string
           description: string
+          forward_status: string
+          forwarded_at: string | null
           id: string
           latitude: number | null
           longitude: number | null
           photo_url: string | null
+          portal_name: string | null
+          portal_reference: string | null
+          portal_submitted_at: string | null
+          portal_url: string | null
+          routed_department: string | null
+          routed_email: string | null
+          routed_office_id: string | null
           status: string
           title: string
           tracking_number: string
@@ -37,10 +81,19 @@ export type Database = {
           category: string
           created_at?: string
           description: string
+          forward_status?: string
+          forwarded_at?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
           photo_url?: string | null
+          portal_name?: string | null
+          portal_reference?: string | null
+          portal_submitted_at?: string | null
+          portal_url?: string | null
+          routed_department?: string | null
+          routed_email?: string | null
+          routed_office_id?: string | null
           status?: string
           title: string
           tracking_number?: string
@@ -53,17 +106,34 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string
+          forward_status?: string
+          forwarded_at?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
           photo_url?: string | null
+          portal_name?: string | null
+          portal_reference?: string | null
+          portal_submitted_at?: string | null
+          portal_url?: string | null
+          routed_department?: string | null
+          routed_email?: string | null
+          routed_office_id?: string | null
           status?: string
           title?: string
           tracking_number?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "complaints_routed_office_id_fkey"
+            columns: ["routed_office_id"]
+            isOneToOne: false
+            referencedRelation: "offices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       favorites: {
         Row: {
