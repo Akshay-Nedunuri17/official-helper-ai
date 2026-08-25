@@ -55,7 +55,7 @@ function Dashboard() {
         <NotificationPreferences userId={user.id} />
       </div>
 
-
+      <ComplaintsTimelineSection userId={user.id} email={user.email} state={profile?.state} />
 
       <div className="mt-10">
         <h2 className="text-xl font-bold flex items-center gap-2"><Heart className="size-5 text-destructive" /> {t("favorites")}</h2>
