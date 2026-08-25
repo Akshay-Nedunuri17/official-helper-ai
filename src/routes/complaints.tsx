@@ -19,7 +19,7 @@ import { ComplaintTimeline } from "@/components/ComplaintTimeline";
 
 export const Route = createFileRoute("/complaints")({ component: Complaints });
 
-const CATEGORIES = [...COMPLAINT_CATEGORIES];
+const CATEGORIES: string[] = [...COMPLAINT_CATEGORIES];
 
 function useProfile(userId?: string) {
   return useQuery({
@@ -159,7 +159,7 @@ function ComplaintCard({ c, citizenEmail, profileState }: { c: any; citizenEmail
 function ComplaintForm({ onDone, profile }: { onDone: () => void; profile?: any }) {
   const { user } = useAuth();
   const { lang } = useI18n();
-  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [category, setCategory] = useState<string>(CATEGORIES[0]!);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
