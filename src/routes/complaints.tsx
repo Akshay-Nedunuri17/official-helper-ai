@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { Camera, MapPin, Plus, Loader2, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Camera, MapPin, Plus, Loader2, CheckCircle2, Clock, AlertCircle, Building2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,10 +13,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
+import { COMPLAINT_CATEGORIES, pickOffice, portalForState, routeForCategory } from "@/lib/complaint-routing";
+import { ComplaintHandoff } from "@/components/ComplaintHandoff";
+import { ComplaintTimeline } from "@/components/ComplaintTimeline";
 
 export const Route = createFileRoute("/complaints")({ component: Complaints });
 
-const CATEGORIES = ["Roads & Infrastructure", "Water Supply", "Sanitation", "Electricity", "Public Health", "Education", "Corruption", "Other"];
+const CATEGORIES = [...COMPLAINT_CATEGORIES];
+
+function useProfile(userId?: string) {
+  return useQuery({
+    queryKey: ["profile", userId],
+    enabled: !!userId,
+    queryFn: async () => (await supabase.from("profiles").select("*").eq("id", userId!).maybeSingle()).data,
+  });
+}
 
 function Complaints() {
   const { user, loading } = useAuth();
@@ -27,6 +38,8 @@ function Complaints() {
   const [trackQ, setTrackQ] = useState("");
 
   useEffect(() => { if (!loading && !user) nav({ to: "/auth" }); }, [user, loading, nav]);
+
+  const { data: profile } = useProfile(user?.id);
 
   const { data: complaints = [] } = useQuery({
     queryKey: ["complaints", user?.id],
@@ -45,7 +58,7 @@ function Complaints() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl sm:text-4xl font-bold">{lang === "en" ? "Citizen Complaints" : "పౌర ఫిర్యాదులు"}</h1>
-          <p className="text-muted-foreground mt-2">{lang === "en" ? "Report civic issues with photo and location. Track status anytime." : "ఫోటో మరియు స్థానంతో ఫిర్యాదు చేయండి. స్థితిని ట్రాక్ చేయండి."}</p>
+          <p className="text-muted-foreground mt-2">{lang === "en" ? "Report civic issues with photo and location, get the right department, and hand your complaint over to the official portal." : "ఫోటో మరియు స్థానంతో ఫిర్యాదు చేయండి. స్థితిని ట్రాక్ చేయండి."}</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -53,9 +66,18 @@ function Complaints() {
           </DialogTrigger>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-auto">
             <DialogHeader><DialogTitle>{lang === "en" ? "File a complaint" : "ఫిర్యాదు ఫైల్ చేయండి"}</DialogTitle></DialogHeader>
-            <ComplaintForm onDone={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["complaints"] }); }} />
+            <ComplaintForm
+              profile={profile}
+              onDone={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["complaints"] }); }}
+            />
           </DialogContent>
         </Dialog>
+      </div>
+
+      <div className="mt-6 rounded-xl border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+        <strong className="text-foreground">How this works:</strong> your complaint is first saved in JanSahayak with a
+        tracking number. We then suggest the responsible department/office and let you forward it by email and submit it
+        on the official government grievance portal — each step is recorded in your complaint timeline.
       </div>
 
       <div className="mt-8 max-w-md">
@@ -64,7 +86,7 @@ function Complaints() {
       </div>
 
       <div className="mt-8 grid md:grid-cols-2 gap-4">
-        {filtered.map((c) => <ComplaintCard key={c.id} c={c} />)}
+        {filtered.map((c) => <ComplaintCard key={c.id} c={c} citizenEmail={user.email} profileState={profile?.state} />)}
         {filtered.length === 0 && (
           <div className="md:col-span-2 text-center py-16 text-muted-foreground border border-dashed border-border rounded-2xl">
             {lang === "en" ? "No complaints yet. Click 'New complaint' to file one." : "ఫిర్యాదులు లేవు."}
@@ -86,8 +108,9 @@ function StatusBadge({ status }: { status: string }) {
   return <Badge variant="outline" className={`gap-1 ${cls}`}><I className="size-3" />{status.replace("_", " ")}</Badge>;
 }
 
-function ComplaintCard({ c }: { c: any }) {
+function ComplaintCard({ c, citizenEmail, profileState }: { c: any; citizenEmail?: string | null; profileState?: string | null }) {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
   useEffect(() => {
     if (!c.photo_url) return;
     supabase.storage.from("complaint-photos").createSignedUrl(c.photo_url, 3600).then(({ data }) => {
@@ -109,12 +132,31 @@ function ComplaintCard({ c }: { c: any }) {
       {photoUrl && <img src={photoUrl} alt="Complaint" className="mt-3 rounded-lg w-full max-h-48 object-cover" loading="lazy" />}
       {c.address && <div className="mt-3 text-xs text-muted-foreground flex items-start gap-1.5"><MapPin className="size-3 mt-0.5 shrink-0" />{c.address}</div>}
       {c.admin_response && <div className="mt-3 p-3 rounded-md bg-secondary text-sm"><strong>Response:</strong> {c.admin_response}</div>}
+
+      <Button
+        variant="ghost"
+        size="sm"
+        className="mt-3 gap-1 px-2"
+        onClick={() => setShowDetail((s) => !s)}
+        aria-expanded={showDetail}
+      >
+        <ChevronDown className={`size-4 transition-transform ${showDetail ? "rotate-180" : ""}`} />
+        {showDetail ? "Hide" : "Timeline & official submission"}
+      </Button>
+
+      {showDetail && (
+        <div className="mt-3 space-y-4">
+          <ComplaintHandoff complaint={c} officeState={c.routed_department ? profileState : profileState} citizenEmail={citizenEmail} />
+          <ComplaintTimeline complaintId={c.id} />
+        </div>
+      )}
+
       <div className="mt-3 text-xs text-muted-foreground">Filed {new Date(c.created_at).toLocaleDateString()}</div>
     </div>
   );
 }
 
-function ComplaintForm({ onDone }: { onDone: () => void }) {
+function ComplaintForm({ onDone, profile }: { onDone: () => void; profile?: any }) {
   const { user } = useAuth();
   const { lang } = useI18n();
   const [category, setCategory] = useState(CATEGORIES[0]);
@@ -123,6 +165,26 @@ function ComplaintForm({ onDone }: { onDone: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [loc, setLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [address, setAddress] = useState("");
+  const [city, setCity] = useState(profile?.district ?? "");
+  const [state, setState] = useState(profile?.state ?? "");
+
+  useEffect(() => {
+    if (profile?.district && !city) setCity(profile.district);
+    if (profile?.state && !state) setState(profile.state);
+  }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const { data: offices = [] } = useQuery({
+    queryKey: ["routing-offices", state],
+    queryFn: async () => {
+      let q = supabase.from("offices").select("id,name,department,address,city,state,email,phone").limit(1000);
+      if (state) q = q.eq("state", state);
+      return (await q).data ?? [];
+    },
+  });
+
+  const suggestion = useMemo(() => pickOffice(offices as any[], category, city, state), [offices, category, city, state]);
+  const route = routeForCategory(category);
+  const portals = portalForState(category, state);
 
   const captureLocation = () => {
     if (!navigator.geolocation) return toast.error("Geolocation not supported");
@@ -146,11 +208,17 @@ function ComplaintForm({ onDone }: { onDone: () => void }) {
       }
       const { error } = await supabase.from("complaints").insert({
         user_id: user.id, category, title: title.trim(), description: description.trim(),
-        photo_url, latitude: loc?.lat ?? null, longitude: loc?.lng ?? null, address: address.trim() || null,
+        photo_url, latitude: loc?.lat ?? null, longitude: loc?.lng ?? null,
+        address: [address.trim(), city.trim(), state.trim()].filter(Boolean).join(", ") || null,
+        routed_department: suggestion?.department ?? route.department,
+        routed_office_id: suggestion?.id ?? null,
+        routed_email: suggestion?.email ?? null,
+        portal_name: (portals.state ?? portals.central).name,
+        portal_url: (portals.state ?? portals.central).url,
       });
       if (error) throw error;
     },
-    onSuccess: () => { toast.success(lang === "en" ? "Complaint filed" : "ఫిర్యాదు ఫైల్ చేయబడింది"); onDone(); },
+    onSuccess: () => { toast.success(lang === "en" ? "Complaint filed — now forward it to the department" : "ఫిర్యాదు ఫైల్ చేయబడింది"); onDone(); },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -171,10 +239,32 @@ function ComplaintForm({ onDone }: { onDone: () => void }) {
         <Label htmlFor="cd">Description</Label>
         <Textarea id="cd" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={1500} rows={4} className="mt-1" />
       </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label htmlFor="cc">City / town</Label>
+          <Input id="cc" value={city} onChange={(e) => setCity(e.target.value)} className="mt-1" />
+        </div>
+        <div>
+          <Label htmlFor="cs">State</Label>
+          <Input id="cs" value={state} onChange={(e) => setState(e.target.value)} className="mt-1" />
+        </div>
+      </div>
       <div>
         <Label htmlFor="ca">Address (optional)</Label>
         <Input id="ca" value={address} onChange={(e) => setAddress(e.target.value)} className="mt-1" />
       </div>
+
+      <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
+        <div className="flex items-center gap-2 font-semibold"><Building2 className="size-4 text-primary" /> Where this will go</div>
+        <div className="mt-2 text-xs text-muted-foreground space-y-1">
+          <div><strong className="text-foreground">Department:</strong> {suggestion?.department ?? route.department}</div>
+          {suggestion && (
+            <div><strong className="text-foreground">Office:</strong> {suggestion.name}, {suggestion.city} {suggestion.email ? `· ${suggestion.email}` : "· no published email"}</div>
+          )}
+          <div><strong className="text-foreground">Portal:</strong> {(portals.state ?? portals.central).name}</div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         <Button type="button" variant="outline" onClick={() => document.getElementById("cphoto")?.click()} className="gap-2">
           <Camera className="size-4" /> {file ? file.name.slice(0, 14) : "Photo"}
