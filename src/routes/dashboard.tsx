@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Heart, User as UserIcon, Sparkles, MailCheck, MailWarning } from "lucide-react";
+import { Heart, User as UserIcon, Sparkles, MailCheck, MailWarning, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -9,6 +9,8 @@ import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { ProfileEditor } from "@/components/ProfileEditor";
 import { NotificationPreferences } from "@/components/NotificationPreferences";
+import { ComplaintTimeline } from "@/components/ComplaintTimeline";
+import { ComplaintHandoff } from "@/components/ComplaintHandoff";
 
 export const Route = createFileRoute("/dashboard")({ component: Dashboard });
 
@@ -55,7 +57,7 @@ function Dashboard() {
         <NotificationPreferences userId={user.id} />
       </div>
 
-
+      <ComplaintsTimelineSection userId={user.id} email={user.email} state={profile?.state} />
 
       <div className="mt-10">
         <h2 className="text-xl font-bold flex items-center gap-2"><Heart className="size-5 text-destructive" /> {t("favorites")}</h2>
@@ -124,6 +126,52 @@ function EmailVerificationBanner({ user }: { user: any }) {
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ComplaintsTimelineSection({ userId, email, state }: { userId: string; email?: string | null; state?: string | null }) {
+  const { data: complaints = [] } = useQuery({
+    queryKey: ["dashboard-complaints", userId],
+    queryFn: async () =>
+      (await supabase.from("complaints").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(5)).data ?? [],
+  });
+
+  return (
+    <div className="mt-10">
+      <h2 className="text-xl font-bold flex items-center gap-2">
+        <ListChecks className="size-5 text-primary" /> My complaints
+      </h2>
+      <p className="text-sm text-muted-foreground mt-1">
+        Every step is recorded — saved in JanSahayak, department identified, forwarded by email, and submitted to the
+        official government portal.
+      </p>
+
+      {complaints.length === 0 ? (
+        <div className="mt-4 gradient-card border border-border rounded-2xl p-8 text-center">
+          <p className="text-muted-foreground">You haven't filed any complaints yet.</p>
+          <Link to="/complaints"><Button className="mt-4 gradient-hero text-primary-foreground border-0">File a complaint</Button></Link>
+        </div>
+      ) : (
+        <div className="mt-4 space-y-4">
+          {complaints.map((c: any) => (
+            <div key={c.id} className="gradient-card border border-border rounded-2xl p-5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div className="text-xs font-mono text-muted-foreground">{c.tracking_number}</div>
+                  <h3 className="font-bold">{c.title}</h3>
+                </div>
+                <span className="text-xs px-2 py-1 rounded bg-secondary capitalize">{c.status.replace("_", " ")}</span>
+              </div>
+              <div className="mt-4 grid gap-5 lg:grid-cols-2">
+                <ComplaintTimeline complaintId={c.id} />
+                <ComplaintHandoff complaint={c} officeState={state} citizenEmail={email} />
+              </div>
+            </div>
+          ))}
+          <Link to="/complaints" className="inline-block text-sm text-primary font-medium">View all complaints →</Link>
+        </div>
+      )}
     </div>
   );
 }

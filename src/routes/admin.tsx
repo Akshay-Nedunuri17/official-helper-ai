@@ -10,6 +10,7 @@ import { importOffices } from "@/lib/office-import.functions";
 import { getAdminDashboard } from "@/lib/admin.functions";
 import { verifyAdmin } from "@/lib/admin-guard.functions";
 import { toast } from "sonner";
+import { AdminComplaintAlerts } from "@/components/AdminComplaintAlerts";
 
 export const Route = createFileRoute("/admin")({ component: Admin });
 
@@ -135,6 +136,8 @@ function Admin() {
         </div>
         <Link to="/complaints" className="mt-4 inline-block text-sm text-primary font-medium">View all complaints →</Link>
       </div>
+
+      <AdminComplaintAlerts />
 
       <OfficeImportCard />
     </div>
