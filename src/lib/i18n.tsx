@@ -43,6 +43,9 @@ const dict = {
   nav_wizard: "Eligibility",
   nav_updates: "Updates",
   nav_complaints: "Complaints",
+  nav_more: "More",
+  nav_track: "Track a complaint",
+  nav_helplines: "Helplines",
   signin: "Sign in",
   signout: "Sign out",
   signup: "Sign up",
@@ -142,8 +145,23 @@ interface I18nCtx {
 
 const Ctx = createContext<I18nCtx | null>(null);
 
-const CACHE_PREFIX = "js_i18n_v3_";
+const CACHE_PREFIX = "js_i18n_v4_";
 const cacheKey = (lang: Lang) => `${CACHE_PREFIX}${lang}`;
+
+// Bundled, pre-translated UI strings for every supported language.
+// These work for everyone (including signed-out visitors) with no network call.
+const localeLoaders = import.meta.glob<{ default: Record<string, string> }>("./locales/*.json");
+
+async function loadStaticLocale(lang: Lang): Promise<Record<string, string> | null> {
+  const loader = localeLoaders[`./locales/${lang}.json`];
+  if (!loader) return null;
+  try {
+    const mod = await loader();
+    return mod.default ?? (mod as unknown as Record<string, string>);
+  } catch {
+    return null;
+  }
+}
 
 function readCache(lang: Lang): Record<string, string> | null {
   if (typeof window === "undefined") return null;
@@ -179,36 +197,41 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       setTranslations(null);
       return;
     }
-    const cached = readCache(lang);
     const englishKeys = Object.keys(dict);
-    // If cache exists and contains all current keys, use it
-    if (cached && englishKeys.every((k) => typeof cached[k] === "string")) {
-      setTranslations(cached);
-      return;
-    }
     const meta = LANGUAGES.find((l) => l.code === lang);
     if (!meta) return;
+
     setTranslating(true);
-    // Merge with any partial cache
-    const partial = cached ?? {};
-    const missing: Record<string, string> = {};
-    for (const k of englishKeys) {
-      if (typeof partial[k] !== "string") missing[k] = (dict as Record<string, string>)[k];
-    }
     (async () => {
+      // 1) Bundled translations (always available, instant, no auth).
+      const base = { ...(await loadStaticLocale(lang)), ...(readCache(lang) ?? {}) };
+      if (!cancelled && Object.keys(base).length > 0) setTranslations(base);
+
+      const missing: Record<string, string> = {};
+      for (const k of englishKeys) {
+        if (typeof base[k] !== "string") missing[k] = (dict as Record<string, string>)[k];
+      }
+
+      if (Object.keys(missing).length === 0) {
+        if (!cancelled) setTranslating(false);
+        return;
+      }
+
+      // 2) Fill any gaps with the AI translator (requires a signed-in session).
       try {
         const res = await translateDict({ data: { targetLanguage: meta.name, entries: missing } });
         if (cancelled) return;
-        const merged = { ...partial, ...res.translations };
+        const merged = { ...base, ...res.translations };
         writeCache(lang, merged);
         setTranslations(merged);
       } catch (e) {
-        console.warn("i18n translate failed", e);
-        if (!cancelled) setTranslations(partial);
+        console.warn("i18n translate fallback unavailable", e);
+        if (!cancelled) setTranslations(base);
       } finally {
         if (!cancelled) setTranslating(false);
       }
     })();
+
     return () => {
       cancelled = true;
     };
