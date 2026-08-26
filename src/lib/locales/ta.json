@@ -96,5 +96,8 @@
   "center_aadhaar": "Aadhaar / UIDAI",
   "center_passport": "பாஸ்போர்ட்",
   "center_employment": "வேலைவாய்ப்பு",
-  "center_agriculture": "வேளாண்மை"
+  "center_agriculture": "வேளாண்மை",
+  "nav_more": "மேலும்",
+  "nav_track": "புகாரைக் கண்காணிக்கவும்",
+  "nav_helplines": "உதவி எண்கள்"
 }

@@ -96,5 +96,8 @@
   "center_aadhaar": "Aadhaar / UIDAI",
   "center_passport": "पासपोर्ट",
   "center_employment": "रोजगार",
-  "center_agriculture": "खेतीबाड़ी"
+  "center_agriculture": "खेतीबाड़ी",
+  "nav_more": "होर्म",
+  "nav_track": "इक शिकायतै दा पता लाओ",
+  "nav_helplines": "मददगारे टेलीफोन"
 }

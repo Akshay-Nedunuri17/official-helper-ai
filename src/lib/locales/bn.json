@@ -96,5 +96,8 @@
   "center_aadhaar": "Aadhaar / UIDAI",
   "center_passport": "পাসপোর্ট",
   "center_employment": "কর্মসংস্থান",
-  "center_agriculture": "কৃষি"
+  "center_agriculture": "কৃষি",
+  "nav_more": "আরও",
+  "nav_track": "অভিযোগের স্থিতি দেখুন",
+  "nav_helplines": "হেল্পলাইন"
 }
