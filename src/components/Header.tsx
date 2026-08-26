@@ -38,8 +38,8 @@ export function Header() {
     { to: "/wizard", label: t("nav_wizard"), hint: "Answer 6 questions, get matches" },
     { to: "/updates", label: t("nav_updates"), hint: "New and trending schemes" },
     { to: "/complaints", label: t("nav_complaints"), hint: "Report a civic issue" },
-    { to: "/track", label: "Track a complaint", hint: "Check status with your number" },
-    { to: "/helplines", label: "Helplines", hint: "Toll-free government numbers" },
+    { to: "/track", label: t("nav_track"), hint: "Check status with your number" },
+    { to: "/helplines", label: t("nav_helplines"), hint: "Toll-free government numbers" },
   ];
   if (user) more.push({ to: "/dashboard", label: t("nav_dashboard"), hint: "Saved schemes and profile" });
   if (isAdmin) more.push({ to: "/admin", label: t("nav_admin"), hint: "Platform analytics" });
@@ -72,7 +72,7 @@ export function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground font-medium">
-                  More <ChevronDown className="size-4" />
+                  {t("nav_more")} <ChevronDown className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-72">
