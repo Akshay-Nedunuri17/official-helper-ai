@@ -293,19 +293,28 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, [lang]);
 
   const setLang = (l: Lang) => {
+    if (!isLang(l)) return;
     setLangState(l);
-    if (typeof window !== "undefined") localStorage.setItem("lang", l);
+    persistLang(l);
   };
 
   const value = useMemo<I18nCtx>(() => ({
     lang,
     setLang,
     translating,
+    // Fallback chain: translated string -> English string -> humanized key.
+    // A raw key never reaches the screen.
     t: (k: Key) => {
-      if (lang === "en") return dict[k];
-      return (translations && translations[k]) || dict[k];
+      const en = (dict as Record<string, string>)[k];
+      if (lang !== "en") {
+        const tr = translations?.[k];
+        if (typeof tr === "string" && tr.trim()) return tr;
+      }
+      if (typeof en === "string" && en.trim()) return en;
+      return humanizeKey(String(k));
     },
   }), [lang, translations, translating]);
+
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
