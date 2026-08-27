@@ -319,8 +319,19 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
+// Never throw: components rendered outside the provider (error screens,
+// portals, standalone previews) fall back to English instead of crashing.
+const fallbackCtx: I18nCtx = {
+  lang: "en",
+  setLang: () => {},
+  translating: false,
+  t: (k: Key) => {
+    const en = (dict as Record<string, string>)[k];
+    return typeof en === "string" && en.trim() ? en : humanizeKey(String(k));
+  },
+};
+
 export function useI18n() {
-  const c = useContext(Ctx);
-  if (!c) throw new Error("useI18n outside provider");
-  return c;
+  return useContext(Ctx) ?? fallbackCtx;
 }
+
