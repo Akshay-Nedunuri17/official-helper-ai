@@ -248,10 +248,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    if (lang === "en") {
-      setTranslations(null);
-      return;
-    }
+    // Drop the previous language's strings immediately so no stale locale shows.
+    setTranslations(null);
+    if (lang === "en") return;
     const englishKeys = Object.keys(dict);
     const meta = LANGUAGES.find((l) => l.code === lang);
     if (!meta) return;
@@ -261,6 +260,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       // 1) Bundled translations (always available, instant, no auth).
       const base = { ...(await loadStaticLocale(lang)), ...(readCache(lang) ?? {}) };
       if (!cancelled && Object.keys(base).length > 0) setTranslations(base);
+
 
       const missing: Record<string, string> = {};
       for (const k of englishKeys) {
