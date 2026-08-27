@@ -181,15 +181,70 @@ function writeCache(lang: Lang, data: Record<string, string>) {
   } catch {}
 }
 
+const LANG_STORAGE_KEY = "lang";
+const RTL_LANGS = new Set<string>(["ur", "ks", "sd"]);
+
+function isLang(v: unknown): v is Lang {
+  return typeof v === "string" && LANGUAGES.some((l) => l.code === v);
+}
+
+// Read the persisted language from localStorage first, then the cookie mirror
+// (survives storage clears in some in-app browsers), then the browser locale.
+function readStoredLang(): Lang | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const ls = localStorage.getItem(LANG_STORAGE_KEY);
+    if (isLang(ls)) return ls;
+  } catch {}
+  try {
+    const m = document.cookie.match(/(?:^|;\s*)js_lang=([^;]+)/);
+    if (m && isLang(decodeURIComponent(m[1]!))) return decodeURIComponent(m[1]!) as Lang;
+  } catch {}
+  const nav = typeof navigator !== "undefined" ? navigator.language?.split("-")[0] : undefined;
+  return isLang(nav) ? nav : null;
+}
+
+function persistLang(l: Lang) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(LANG_STORAGE_KEY, l);
+  } catch {}
+  try {
+    document.cookie = `js_lang=${encodeURIComponent(l)}; path=/; max-age=31536000; samesite=lax`;
+  } catch {}
+  try {
+    document.documentElement.lang = l;
+    document.documentElement.dir = RTL_LANGS.has(l) ? "rtl" : "ltr";
+  } catch {}
+}
+
+// Last-resort label so a missing key never renders as "nav_schemes".
+function humanizeKey(k: string) {
+  const cleaned = k.replace(/^[a-z]+_/, "").replace(/[_-]+/g, " ").trim();
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
   const [translations, setTranslations] = useState<Record<string, string> | null>(null);
   const [translating, setTranslating] = useState(false);
 
+  // Restore after hydration so SSR markup and first client render always match.
   useEffect(() => {
-    const stored = (typeof window !== "undefined" && localStorage.getItem("lang")) as Lang | null;
-    if (stored && LANGUAGES.some((l) => l.code === stored)) setLangState(stored);
+    const stored = readStoredLang();
+    if (stored) setLangState(stored);
+    persistLang(stored ?? "en");
   }, []);
+
+  // Keep the language in sync across tabs/windows.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === LANG_STORAGE_KEY && isLang(e.newValue)) setLangState(e.newValue);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
 
   useEffect(() => {
     let cancelled = false;
