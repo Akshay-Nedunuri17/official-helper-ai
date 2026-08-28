@@ -148,16 +148,34 @@ function Services() {
     toast.success(`Location set to ${city.city}, ${city.state}`);
   };
 
-  const mapPins = nearestCenters.map((o) => ({
-    id: o.id,
-    name: o.name,
-    department: o.department,
-    address: o.address,
-    city: o.city,
-    latitude: o.latitude as number,
-    longitude: o.longitude as number,
-    distanceKm: o.distanceKm,
-  }));
+  const liveWithDistance = userLoc
+    ? livePlaces
+        .map((p) => ({ ...p, distanceKm: haversineKm(userLoc, [p.latitude, p.longitude]) }))
+        .sort((a, b) => a.distanceKm - b.distanceKm)
+    : [];
+
+  const mapPins = [
+    ...nearestCenters.map((o) => ({
+      id: o.id,
+      name: o.name,
+      department: o.department,
+      address: o.address,
+      city: o.city,
+      latitude: o.latitude as number,
+      longitude: o.longitude as number,
+      distanceKm: o.distanceKm,
+    })),
+    ...liveWithDistance.map((p) => ({
+      id: p.id,
+      name: p.name,
+      department: p.department,
+      address: p.address,
+      city: p.city,
+      latitude: p.latitude,
+      longitude: p.longitude,
+      distanceKm: p.distanceKm,
+    })),
+  ];
 
   const filtered = data.filter((s) =>
     !q || `${s.name_en} ${s.name_te ?? ""} ${s.department ?? ""}`.toLowerCase().includes(q.toLowerCase())
