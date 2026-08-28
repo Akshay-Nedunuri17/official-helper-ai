@@ -281,6 +281,50 @@ function Services() {
             </div>
           </div>
         )}
+
+        {liveWithDistance.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Globe2 className="size-4 text-primary" /> Live results from Google Maps
+            </h3>
+            <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {liveWithDistance.map((p) => (
+                <div key={p.id} className="rounded-xl border border-border bg-background/60 p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-saffron">{p.department}</div>
+                    <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+                      {p.distanceKm.toFixed(1)} km
+                    </span>
+                  </div>
+                  <h4 className="mt-1 font-semibold text-sm leading-tight">{p.name}</h4>
+                  <p className="mt-1 text-xs text-muted-foreground flex items-start gap-1.5">
+                    <MapPin className="size-3.5 mt-0.5 shrink-0" />
+                    <span>{p.address}</span>
+                  </p>
+                  <div className="mt-2 flex items-center gap-3 text-xs">
+                    {p.rating != null && (
+                      <span className="inline-flex items-center gap-1 text-muted-foreground">
+                        <Star className="size-3.5" /> {p.rating}
+                      </span>
+                    )}
+                    {p.openNow != null && (
+                      <span className={p.openNow ? "text-emerald-600 font-medium" : "text-muted-foreground"}>
+                        {p.openNow ? "Open now" : "Closed"}
+                      </span>
+                    )}
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${p.latitude},${p.longitude}`}
+                      target="_blank" rel="noreferrer"
+                      className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                    >
+                      {t("directions")} <ExternalLink className="size-3" />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       <div className="relative mt-6 max-w-xl">
