@@ -25,6 +25,27 @@ function Services() {
   const [manualOpen, setManualOpen] = useState(false);
   const [locationLabel, setLocationLabel] = useState<string | null>(null);
   const autoTriedRef = useRef(false);
+  const { user } = useAuth();
+  const findLive = useServerFn(searchNearbyGovCenters);
+  const [livePlaces, setLivePlaces] = useState<LivePlace[]>([]);
+  const [liveLoading, setLiveLoading] = useState(false);
+
+  const loadLivePlaces = async () => {
+    if (!userLoc) { toast.error(t("enable_location_for_nearby")); return; }
+    if (!user) { toast.error("Sign in to search live Google Maps results"); return; }
+    setLiveLoading(true);
+    try {
+      const res = await findLive({
+        data: { latitude: userLoc[0], longitude: userLoc[1], radiusMeters: 15000, query: "government service center CSC MeeSeva" },
+      });
+      setLivePlaces(res);
+      toast.success(`${res.length} live centers found nearby`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Live search failed");
+    } finally {
+      setLiveLoading(false);
+    }
+  };
 
   const { data = [] } = useQuery({
     queryKey: ["services"],
