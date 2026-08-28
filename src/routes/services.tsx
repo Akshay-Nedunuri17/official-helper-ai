@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Search, FileText, Clock, IndianRupee, Building2, MapPin, LocateFixed, ExternalLink, Loader2, Crosshair, X } from "lucide-react";
+import { Search, FileText, Clock, IndianRupee, Building2, MapPin, LocateFixed, ExternalLink, Loader2, Crosshair, X, Globe2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
@@ -10,6 +11,8 @@ import { isServiceCenter } from "@/lib/center-types";
 import { toast } from "sonner";
 import { ClientOfficeMap as OfficeMap } from "@/components/ClientOfficeMap";
 import { haversineKm, readSavedLocation, saveLocation } from "@/lib/location";
+import { searchNearbyGovCenters, type LivePlace } from "@/lib/places.functions";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/services")({ component: Services });
 
