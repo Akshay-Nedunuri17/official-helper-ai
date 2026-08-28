@@ -209,6 +209,10 @@ function Services() {
               <Crosshair className="size-4" />
               {t("set_location_manually")}
             </Button>
+            <Button size="sm" variant="outline" onClick={loadLivePlaces} disabled={liveLoading || !userLoc} className="gap-2">
+              {liveLoading ? <Loader2 className="size-4 animate-spin" /> : <Globe2 className="size-4" />}
+              Search live on Google
+            </Button>
           </div>
         </div>
 
