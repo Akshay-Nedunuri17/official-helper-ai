@@ -253,8 +253,44 @@ function Offices() {
             <Crosshair className="size-4" />
             {t("set_location_manually")}
           </Button>
+          <Button variant="outline" onClick={loadLivePlaces} disabled={liveLoading || !userLoc} className="gap-2">
+            {liveLoading ? <Loader2 className="size-4 animate-spin" /> : <Globe2 className="size-4" />}
+            Search live on Google
+          </Button>
         </div>
       </div>
+
+      {liveWithDistance.length > 0 && (
+        <section className="mt-5">
+          <h2 className="text-sm font-semibold mb-2 flex items-center gap-2">
+            <Globe2 className="size-4 text-primary" /> Live results from Google Maps
+          </h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {liveWithDistance.map((p) => (
+              <div key={p.id} className="rounded-xl border border-border bg-background/60 p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-saffron">{p.department}</div>
+                  <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+                    {p.distanceKm.toFixed(1)} km
+                  </span>
+                </div>
+                <h3 className="mt-1 font-semibold text-sm leading-tight">{p.name}</h3>
+                <p className="mt-1 text-xs text-muted-foreground flex items-start gap-1.5">
+                  <MapPin className="size-3.5 mt-0.5 shrink-0" />
+                  <span>{p.address}</span>
+                </p>
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${p.latitude},${p.longitude}`}
+                  target="_blank" rel="noreferrer"
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                >
+                  {t("directions")} <ExternalLink className="size-3" />
+                </a>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Manual location panel */}
       {manualOpen && (

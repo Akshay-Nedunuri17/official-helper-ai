@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Search, FileText, Clock, IndianRupee, Building2, MapPin, LocateFixed, ExternalLink, Loader2, Crosshair, X } from "lucide-react";
+import { Search, FileText, Clock, IndianRupee, Building2, MapPin, LocateFixed, ExternalLink, Loader2, Crosshair, X, Globe2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
@@ -10,6 +11,8 @@ import { isServiceCenter } from "@/lib/center-types";
 import { toast } from "sonner";
 import { ClientOfficeMap as OfficeMap } from "@/components/ClientOfficeMap";
 import { haversineKm, readSavedLocation, saveLocation } from "@/lib/location";
+import { searchNearbyGovCenters, type LivePlace } from "@/lib/places.functions";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/services")({ component: Services });
 
@@ -22,6 +25,27 @@ function Services() {
   const [manualOpen, setManualOpen] = useState(false);
   const [locationLabel, setLocationLabel] = useState<string | null>(null);
   const autoTriedRef = useRef(false);
+  const { user } = useAuth();
+  const findLive = useServerFn(searchNearbyGovCenters);
+  const [livePlaces, setLivePlaces] = useState<LivePlace[]>([]);
+  const [liveLoading, setLiveLoading] = useState(false);
+
+  const loadLivePlaces = async () => {
+    if (!userLoc) { toast.error(t("enable_location_for_nearby")); return; }
+    if (!user) { toast.error("Sign in to search live Google Maps results"); return; }
+    setLiveLoading(true);
+    try {
+      const res = await findLive({
+        data: { latitude: userLoc[0], longitude: userLoc[1], radiusMeters: 15000, query: "government service center CSC MeeSeva" },
+      });
+      setLivePlaces(res);
+      toast.success(`${res.length} live centers found nearby`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Live search failed");
+    } finally {
+      setLiveLoading(false);
+    }
+  };
 
   const { data = [] } = useQuery({
     queryKey: ["services"],
@@ -124,16 +148,34 @@ function Services() {
     toast.success(`Location set to ${city.city}, ${city.state}`);
   };
 
-  const mapPins = nearestCenters.map((o) => ({
-    id: o.id,
-    name: o.name,
-    department: o.department,
-    address: o.address,
-    city: o.city,
-    latitude: o.latitude as number,
-    longitude: o.longitude as number,
-    distanceKm: o.distanceKm,
-  }));
+  const liveWithDistance = userLoc
+    ? livePlaces
+        .map((p) => ({ ...p, distanceKm: haversineKm(userLoc, [p.latitude, p.longitude]) }))
+        .sort((a, b) => a.distanceKm - b.distanceKm)
+    : [];
+
+  const mapPins = [
+    ...nearestCenters.map((o) => ({
+      id: o.id,
+      name: o.name,
+      department: o.department,
+      address: o.address,
+      city: o.city,
+      latitude: o.latitude as number,
+      longitude: o.longitude as number,
+      distanceKm: o.distanceKm,
+    })),
+    ...liveWithDistance.map((p) => ({
+      id: p.id,
+      name: p.name,
+      department: p.department,
+      address: p.address,
+      city: p.city,
+      latitude: p.latitude,
+      longitude: p.longitude,
+      distanceKm: p.distanceKm,
+    })),
+  ];
 
   const filtered = data.filter((s) =>
     !q || `${s.name_en} ${s.name_te ?? ""} ${s.department ?? ""}`.toLowerCase().includes(q.toLowerCase())
@@ -166,6 +208,10 @@ function Services() {
             <Button size="sm" variant="outline" onClick={() => setManualOpen((v) => !v)} className="gap-2">
               <Crosshair className="size-4" />
               {t("set_location_manually")}
+            </Button>
+            <Button size="sm" variant="outline" onClick={loadLivePlaces} disabled={liveLoading || !userLoc} className="gap-2">
+              {liveLoading ? <Loader2 className="size-4 animate-spin" /> : <Globe2 className="size-4" />}
+              Search live on Google
             </Button>
           </div>
         </div>
@@ -232,6 +278,50 @@ function Services() {
             <div>
               <h3 className="text-sm font-semibold mb-2">{t("mini_map_nearest")}</h3>
               <OfficeMap offices={mapPins} height={320} userLocation={userLoc} accuracyMeters={accuracy} />
+            </div>
+          </div>
+        )}
+
+        {liveWithDistance.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Globe2 className="size-4 text-primary" /> Live results from Google Maps
+            </h3>
+            <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {liveWithDistance.map((p) => (
+                <div key={p.id} className="rounded-xl border border-border bg-background/60 p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-saffron">{p.department}</div>
+                    <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+                      {p.distanceKm.toFixed(1)} km
+                    </span>
+                  </div>
+                  <h4 className="mt-1 font-semibold text-sm leading-tight">{p.name}</h4>
+                  <p className="mt-1 text-xs text-muted-foreground flex items-start gap-1.5">
+                    <MapPin className="size-3.5 mt-0.5 shrink-0" />
+                    <span>{p.address}</span>
+                  </p>
+                  <div className="mt-2 flex items-center gap-3 text-xs">
+                    {p.rating != null && (
+                      <span className="inline-flex items-center gap-1 text-muted-foreground">
+                        <Star className="size-3.5" /> {p.rating}
+                      </span>
+                    )}
+                    {p.openNow != null && (
+                      <span className={p.openNow ? "text-emerald-600 font-medium" : "text-muted-foreground"}>
+                        {p.openNow ? "Open now" : "Closed"}
+                      </span>
+                    )}
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${p.latitude},${p.longitude}`}
+                      target="_blank" rel="noreferrer"
+                      className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                    >
+                      {t("directions")} <ExternalLink className="size-3" />
+                    </a>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
