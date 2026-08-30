@@ -4,8 +4,11 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Search, MapPin, Phone, Clock, ExternalLink, List, Map as MapIcon,
-  LocateFixed, Loader2, Building2, Landmark, X, Crosshair,
+  LocateFixed, Loader2, Building2, Landmark, X, Crosshair, Globe2,
 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { searchNearbyGovCenters, type LivePlace } from "@/lib/places.functions";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
