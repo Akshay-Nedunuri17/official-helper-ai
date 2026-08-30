@@ -229,7 +229,19 @@ function Offices() {
       city: o.city, latitude: o.latitude!, longitude: o.longitude!,
       distanceKm: (o as { distanceKm?: number }).distanceKm,
     }));
-  const nearestMapPins = mapPins.slice(0, 12);
+  const liveWithDistance = userLoc
+    ? livePlaces
+        .map((p) => ({ ...p, distanceKm: haversineKm(userLoc, [p.latitude, p.longitude]) }))
+        .sort((a, b) => a.distanceKm - b.distanceKm)
+    : [];
+
+  const nearestMapPins = [
+    ...mapPins.slice(0, 12),
+    ...liveWithDistance.map((p) => ({
+      id: p.id, name: p.name, department: p.department, address: p.address,
+      city: p.city, latitude: p.latitude, longitude: p.longitude, distanceKm: p.distanceKm,
+    })),
+  ];
 
   return (
     <div className="container mx-auto px-4 py-8 sm:py-10">
