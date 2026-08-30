@@ -4,8 +4,11 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Search, MapPin, Phone, Clock, ExternalLink, List, Map as MapIcon,
-  LocateFixed, Loader2, Building2, Landmark, X, Crosshair,
+  LocateFixed, Loader2, Building2, Landmark, X, Crosshair, Globe2,
 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { searchNearbyGovCenters, type LivePlace } from "@/lib/places.functions";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
@@ -43,6 +46,32 @@ function Offices() {
   const autoTriedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const findLive = useServerFn(searchNearbyGovCenters);
+  const [livePlaces, setLivePlaces] = useState<LivePlace[]>([]);
+  const [liveLoading, setLiveLoading] = useState(false);
+
+  const loadLivePlaces = async () => {
+    if (!userLoc) { toast.error(t("enable_location_for_nearby")); return; }
+    if (!user) { toast.error("Sign in to search live Google Maps results"); return; }
+    setLiveLoading(true);
+    try {
+      const res = await findLive({
+        data: {
+          latitude: userLoc[0],
+          longitude: userLoc[1],
+          radiusMeters: 15000,
+          query: q.trim().length >= 2 ? q.trim() : "government office service center",
+        },
+      });
+      setLivePlaces(res);
+      toast.success(`${res.length} live places found nearby`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Live search failed");
+    } finally {
+      setLiveLoading(false);
+    }
+  };
 
   const translatedCenterLabel = (key: string) => {
     const ct = CENTER_TYPES.find((c) => c.key === key);
@@ -226,7 +255,19 @@ function Offices() {
       city: o.city, latitude: o.latitude!, longitude: o.longitude!,
       distanceKm: (o as { distanceKm?: number }).distanceKm,
     }));
-  const nearestMapPins = mapPins.slice(0, 12);
+  const liveWithDistance = userLoc
+    ? livePlaces
+        .map((p) => ({ ...p, distanceKm: haversineKm(userLoc, [p.latitude, p.longitude]) }))
+        .sort((a, b) => a.distanceKm - b.distanceKm)
+    : [];
+
+  const nearestMapPins = [
+    ...mapPins.slice(0, 12),
+    ...liveWithDistance.map((p) => ({
+      id: p.id, name: p.name, department: p.department, address: p.address,
+      city: p.city, latitude: p.latitude, longitude: p.longitude, distanceKm: p.distanceKm,
+    })),
+  ];
 
   return (
     <div className="container mx-auto px-4 py-8 sm:py-10">
