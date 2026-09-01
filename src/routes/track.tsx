@@ -7,7 +7,19 @@ import { Badge } from "@/components/ui/badge";
 import { trackComplaint } from "@/lib/track.functions";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/track")({ component: Track });
+export const Route = createFileRoute("/track")({
+  component: Track,
+  head: () => ({
+    meta: [
+      { title: "Track Your Complaint Status | JanSahayak" },
+      { name: "description", content: "Enter your JS tracking number to check the current status and history of your citizen complaint." },
+      { property: "og:title", content: "Track Your Complaint Status" },
+      { property: "og:description", content: "Enter your JanSahayak tracking number to see complaint status and history." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 type StatusRow = {
   tracking_number: string;

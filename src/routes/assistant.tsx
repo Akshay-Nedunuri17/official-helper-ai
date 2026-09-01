@@ -11,7 +11,19 @@ import { useI18n, LANGUAGES } from "@/lib/i18n";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 
-export const Route = createFileRoute("/assistant")({ component: Assistant });
+export const Route = createFileRoute("/assistant")({
+  component: Assistant,
+  head: () => ({
+    meta: [
+      { title: "AI Assistant for Government Schemes | JanSahayak" },
+      { name: "description", content: "Ask in your language and get instant AI guidance on Indian government schemes, eligibility, documents and how to apply." },
+      { property: "og:title", content: "AI Assistant for Indian Government Schemes" },
+      { property: "og:description", content: "Get instant AI answers about scheme eligibility, required documents and application steps." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 type Msg = { role: "user" | "assistant"; content: string };
 

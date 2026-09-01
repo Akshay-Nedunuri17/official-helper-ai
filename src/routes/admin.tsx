@@ -12,7 +12,19 @@ import { verifyAdmin } from "@/lib/admin-guard.functions";
 import { toast } from "sonner";
 import { AdminComplaintAlerts } from "@/components/AdminComplaintAlerts";
 
-export const Route = createFileRoute("/admin")({ component: Admin });
+export const Route = createFileRoute("/admin")({
+  component: Admin,
+  head: () => ({
+    meta: [
+      { title: "Admin Dashboard | JanSahayak" },
+      { name: "description", content: "Manage schemes, offices, complaints and view citizen analytics on the JanSahayak admin dashboard." },
+      { property: "og:title", content: "JanSahayak Admin Dashboard" },
+      { property: "og:description", content: "Manage schemes, offices, complaints and analytics for JanSahayak." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 function Admin() {
   const { t } = useI18n();

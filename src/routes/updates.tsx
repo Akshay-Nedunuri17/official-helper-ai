@@ -6,7 +6,19 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 
-export const Route = createFileRoute("/updates")({ component: Updates });
+export const Route = createFileRoute("/updates")({
+  component: Updates,
+  head: () => ({
+    meta: [
+      { title: "Latest Government Scheme Updates | JanSahayak" },
+      { name: "description", content: "Trending and newly launched Indian government schemes, deadlines and announcements for citizens." },
+      { property: "og:title", content: "Latest Government Scheme Updates" },
+      { property: "og:description", content: "Trending and newly launched Indian government schemes and announcements." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 function Updates() {
   const { lang } = useI18n();
