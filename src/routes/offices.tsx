@@ -89,6 +89,53 @@ function Offices() {
     }
   };
 
+  const findArea = useServerFn(searchGovOfficesInArea);
+  const [areaQ, setAreaQ] = useState("");
+  const [areaCat, setAreaCat] = useState("all");
+  const [areaLoading, setAreaLoading] = useState(false);
+  const [areaCenter, setAreaCenter] = useState<{ latitude: number; longitude: number; label: string } | null>(null);
+
+  const AREA_CATS: Array<{ key: string; label: string }> = [
+    { key: "all", label: "All government offices" },
+    { key: "csc", label: "MeeSeva / CSC / e-Seva" },
+    { key: "rto", label: "RTO / Transport" },
+    { key: "collector", label: "Collector / Tehsil / Revenue" },
+    { key: "municipal", label: "Municipal / Panchayat" },
+    { key: "hospital", label: "Government hospitals / PHC" },
+    { key: "police", label: "Police stations" },
+    { key: "post", label: "Post offices" },
+    { key: "aadhaar", label: "Aadhaar centres" },
+    { key: "passport", label: "Passport Seva Kendra" },
+    { key: "employment", label: "Employment / Industries" },
+    { key: "bank", label: "Banks / IPPB" },
+  ];
+
+  const runAreaSearch = async () => {
+    if (!user) { toast.error("Sign in to search government offices across India"); return; }
+    if (areaQ.trim().length < 2 && !userLoc) {
+      toast.error("Enter a city, district or pincode");
+      return;
+    }
+    setAreaLoading(true);
+    try {
+      const res = await findArea({
+        data: {
+          ...(areaQ.trim().length >= 2
+            ? { area: areaQ.trim() }
+            : { latitude: userLoc![0], longitude: userLoc![1] }),
+          category: areaCat,
+        },
+      });
+      setAreaCenter(res.center);
+      setLivePlaces(res.places);
+      toast.success(`${res.places.length} offices found${res.center ? ` in ${res.center.label}` : ""}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Search failed");
+    } finally {
+      setAreaLoading(false);
+    }
+  };
+
   const translatedCenterLabel = (key: string) => {
     const ct = CENTER_TYPES.find((c) => c.key === key);
     return ct?.labelKey ? t(ct.labelKey as Key) : ct?.label ?? key;
