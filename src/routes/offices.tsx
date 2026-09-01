@@ -19,7 +19,19 @@ import { CENTER_TYPES, matchesCenter } from "@/lib/center-types";
 import { clearSavedLocation, haversineKm, readSavedLocation, saveLocation } from "@/lib/location";
 import type { Key } from "@/lib/i18n";
 
-export const Route = createFileRoute("/offices")({ component: Offices });
+export const Route = createFileRoute("/offices")({
+  component: Offices,
+  head: () => ({
+    meta: [
+      { title: "Government Office Locator Near You | JanSahayak" },
+      { name: "description", content: "Find MeeSeva, CSC, RTO, Aadhaar, Passport Seva, hospitals and collectorate offices near you across India with directions." },
+      { property: "og:title", content: "Government Office Locator Across India" },
+      { property: "og:description", content: "Find nearby MeeSeva, CSC, RTO, Aadhaar and other government offices with directions." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 type Suggestion =
   | { kind: "office"; id: string; label: string; sub: string }

@@ -11,7 +11,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 
-export const Route = createFileRoute("/wizard")({ component: Wizard });
+export const Route = createFileRoute("/wizard")({
+  component: Wizard,
+  head: () => ({
+    meta: [
+      { title: "Smart Eligibility Wizard | JanSahayak" },
+      { name: "description", content: "Answer a few simple questions and instantly see which Indian government schemes you are eligible for." },
+      { property: "og:title", content: "Smart Scheme Eligibility Wizard" },
+      { property: "og:description", content: "Answer a few questions and see which government schemes you qualify for." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 const STATES = ["All India", "Andhra Pradesh", "Telangana", "Tamil Nadu", "Karnataka", "Kerala", "Maharashtra", "Uttar Pradesh", "Bihar", "West Bengal", "Gujarat", "Rajasthan", "Madhya Pradesh", "Other"];
 const OCCS = ["Farmer", "Student", "Entrepreneur", "Unemployed", "Salaried", "Self-employed", "Retired", "Homemaker"];

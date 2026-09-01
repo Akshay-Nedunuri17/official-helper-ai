@@ -12,7 +12,19 @@ import { NotificationPreferences } from "@/components/NotificationPreferences";
 import { ComplaintTimeline } from "@/components/ComplaintTimeline";
 import { ComplaintHandoff } from "@/components/ComplaintHandoff";
 
-export const Route = createFileRoute("/dashboard")({ component: Dashboard });
+export const Route = createFileRoute("/dashboard")({
+  component: Dashboard,
+  head: () => ({
+    meta: [
+      { title: "My Dashboard | JanSahayak" },
+      { name: "description", content: "View saved schemes, complaint status, notifications and your citizen profile in one place." },
+      { property: "og:title", content: "Your JanSahayak Dashboard" },
+      { property: "og:description", content: "Saved schemes, complaint tracking, notifications and profile in one place." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 function Dashboard() {
   const { t, lang } = useI18n();

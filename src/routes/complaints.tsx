@@ -17,7 +17,19 @@ import { COMPLAINT_CATEGORIES, pickOffice, portalForState, routeForCategory } fr
 import { ComplaintHandoff } from "@/components/ComplaintHandoff";
 import { ComplaintTimeline } from "@/components/ComplaintTimeline";
 
-export const Route = createFileRoute("/complaints")({ component: Complaints });
+export const Route = createFileRoute("/complaints")({
+  component: Complaints,
+  head: () => ({
+    meta: [
+      { title: "File a Citizen Complaint | JanSahayak" },
+      { name: "description", content: "Report civic issues with photos and location, get a tracking number, and forward your complaint to the right government department." },
+      { property: "og:title", content: "File a Citizen Complaint" },
+      { property: "og:description", content: "Report civic issues with photo and location, then track and forward to the right department." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 const CATEGORIES: string[] = [...COMPLAINT_CATEGORIES];
 

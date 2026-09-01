@@ -11,7 +11,19 @@ import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 
-export const Route = createFileRoute("/auth")({ component: Auth });
+export const Route = createFileRoute("/auth")({
+  component: Auth,
+  head: () => ({
+    meta: [
+      { title: "Sign In or Create Account | JanSahayak" },
+      { name: "description", content: "Log in with Google or email to save schemes, file complaints and get personalised government scheme recommendations." },
+      { property: "og:title", content: "Sign In to JanSahayak" },
+      { property: "og:description", content: "Log in with Google or email to save schemes and track complaints." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 function Auth() {
   const { t } = useI18n();

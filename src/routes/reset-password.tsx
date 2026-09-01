@@ -7,7 +7,19 @@ import { Sparkles, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/reset-password")({ component: ResetPassword });
+export const Route = createFileRoute("/reset-password")({
+  component: ResetPassword,
+  head: () => ({
+    meta: [
+      { title: "Reset Your Password | JanSahayak" },
+      { name: "description", content: "Set a new password for your JanSahayak account securely." },
+      { property: "og:title", content: "Reset Your JanSahayak Password" },
+      { property: "og:description", content: "Set a new password for your account securely." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 function ResetPassword() {
   const nav = useNavigate();

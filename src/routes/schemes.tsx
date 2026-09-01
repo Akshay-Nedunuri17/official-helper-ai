@@ -12,7 +12,19 @@ import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { downloadChecklistPDF } from "@/lib/pdf";
 
-export const Route = createFileRoute("/schemes")({ component: Schemes });
+export const Route = createFileRoute("/schemes")({
+  component: Schemes,
+  head: () => ({
+    meta: [
+      { title: "Find Government Schemes in India | JanSahayak" },
+      { name: "description", content: "Search 340+ verified central and state government schemes by state, category, income, gender, caste and occupation." },
+      { property: "og:title", content: "Find Indian Government Schemes" },
+      { property: "og:description", content: "Search verified central and state schemes by state, income, category and more." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 const GENDERS = ["All", "Female", "Male"];
 const OCCUPATIONS = ["Any", "Farmer", "Student", "Salaried", "Self-employed", "Unorganised worker", "Entrepreneur", "Artisan", "Fisherman", "Street vendor", "Pregnant women", "Working women", "Apprentice"];

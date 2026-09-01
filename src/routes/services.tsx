@@ -14,7 +14,19 @@ import { haversineKm, readSavedLocation, saveLocation } from "@/lib/location";
 import { searchNearbyGovCenters, type LivePlace } from "@/lib/places.functions";
 import { useAuth } from "@/lib/auth";
 
-export const Route = createFileRoute("/services")({ component: Services });
+export const Route = createFileRoute("/services")({
+  component: Services,
+  head: () => ({
+    meta: [
+      { title: "Government Services & Document Checklists | JanSahayak" },
+      { name: "description", content: "Step-by-step procedures, fees, timelines and document checklists for common Indian government services, plus nearest service centers." },
+      { property: "og:title", content: "Government Services & Document Checklists" },
+      { property: "og:description", content: "Procedures, fees, timelines and document checklists for Indian government services." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 function Services() {
   const { t, lang } = useI18n();
