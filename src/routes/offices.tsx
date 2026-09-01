@@ -330,7 +330,8 @@ function Offices() {
     ...mapPins.slice(0, 12),
     ...liveWithDistance.map((p) => ({
       id: p.id, name: p.name, department: p.department, address: p.address,
-      city: p.city, latitude: p.latitude, longitude: p.longitude, distanceKm: p.distanceKm,
+      city: p.city, latitude: p.latitude, longitude: p.longitude,
+      distanceKm: p.distanceKm ?? undefined,
     })),
   ];
 
