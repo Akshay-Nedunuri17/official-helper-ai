@@ -7,7 +7,11 @@ import {
   LocateFixed, Loader2, Building2, Landmark, X, Crosshair, Globe2,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { searchNearbyGovCenters, type LivePlace } from "@/lib/places.functions";
+import {
+  searchNearbyGovCenters,
+  searchGovOfficesInArea,
+  type LivePlace,
+} from "@/lib/places.functions";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
