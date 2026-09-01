@@ -7,7 +7,11 @@ import {
   LocateFixed, Loader2, Building2, Landmark, X, Crosshair, Globe2,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { searchNearbyGovCenters, type LivePlace } from "@/lib/places.functions";
+import {
+  searchNearbyGovCenters,
+  searchGovOfficesInArea,
+  type LivePlace,
+} from "@/lib/places.functions";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -82,6 +86,53 @@ function Offices() {
       toast.error(e instanceof Error ? e.message : "Live search failed");
     } finally {
       setLiveLoading(false);
+    }
+  };
+
+  const findArea = useServerFn(searchGovOfficesInArea);
+  const [areaQ, setAreaQ] = useState("");
+  const [areaCat, setAreaCat] = useState("all");
+  const [areaLoading, setAreaLoading] = useState(false);
+  const [areaCenter, setAreaCenter] = useState<{ latitude: number; longitude: number; label: string } | null>(null);
+
+  const AREA_CATS: Array<{ key: string; label: string }> = [
+    { key: "all", label: "All government offices" },
+    { key: "csc", label: "MeeSeva / CSC / e-Seva" },
+    { key: "rto", label: "RTO / Transport" },
+    { key: "collector", label: "Collector / Tehsil / Revenue" },
+    { key: "municipal", label: "Municipal / Panchayat" },
+    { key: "hospital", label: "Government hospitals / PHC" },
+    { key: "police", label: "Police stations" },
+    { key: "post", label: "Post offices" },
+    { key: "aadhaar", label: "Aadhaar centres" },
+    { key: "passport", label: "Passport Seva Kendra" },
+    { key: "employment", label: "Employment / Industries" },
+    { key: "bank", label: "Banks / IPPB" },
+  ];
+
+  const runAreaSearch = async () => {
+    if (!user) { toast.error("Sign in to search government offices across India"); return; }
+    if (areaQ.trim().length < 2 && !userLoc) {
+      toast.error("Enter a city, district or pincode");
+      return;
+    }
+    setAreaLoading(true);
+    try {
+      const res = await findArea({
+        data: {
+          ...(areaQ.trim().length >= 2
+            ? { area: areaQ.trim() }
+            : { latitude: userLoc![0], longitude: userLoc![1] }),
+          category: areaCat,
+        },
+      });
+      setAreaCenter(res.center);
+      setLivePlaces(res.places);
+      toast.success(`${res.places.length} offices found${res.center ? ` in ${res.center.label}` : ""}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Search failed");
+    } finally {
+      setAreaLoading(false);
     }
   };
 
@@ -267,17 +318,20 @@ function Offices() {
       city: o.city, latitude: o.latitude!, longitude: o.longitude!,
       distanceKm: (o as { distanceKm?: number }).distanceKm,
     }));
-  const liveWithDistance = userLoc
+  const liveOrigin: [number, number] | null = userLoc
+    ?? (areaCenter ? [areaCenter.latitude, areaCenter.longitude] : null);
+  const liveWithDistance = liveOrigin
     ? livePlaces
-        .map((p) => ({ ...p, distanceKm: haversineKm(userLoc, [p.latitude, p.longitude]) }))
+        .map((p) => ({ ...p, distanceKm: haversineKm(liveOrigin, [p.latitude, p.longitude]) }))
         .sort((a, b) => a.distanceKm - b.distanceKm)
-    : [];
+    : livePlaces.map((p) => ({ ...p, distanceKm: null as number | null }));
 
   const nearestMapPins = [
     ...mapPins.slice(0, 12),
     ...liveWithDistance.map((p) => ({
       id: p.id, name: p.name, department: p.department, address: p.address,
-      city: p.city, latitude: p.latitude, longitude: p.longitude, distanceKm: p.distanceKm,
+      city: p.city, latitude: p.latitude, longitude: p.longitude,
+      distanceKm: p.distanceKm ?? undefined,
     })),
   ];
 
