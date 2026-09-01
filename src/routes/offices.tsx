@@ -318,11 +318,13 @@ function Offices() {
       city: o.city, latitude: o.latitude!, longitude: o.longitude!,
       distanceKm: (o as { distanceKm?: number }).distanceKm,
     }));
-  const liveWithDistance = userLoc
+  const liveOrigin: [number, number] | null = userLoc
+    ?? (areaCenter ? [areaCenter.latitude, areaCenter.longitude] : null);
+  const liveWithDistance = liveOrigin
     ? livePlaces
-        .map((p) => ({ ...p, distanceKm: haversineKm(userLoc, [p.latitude, p.longitude]) }))
+        .map((p) => ({ ...p, distanceKm: haversineKm(liveOrigin, [p.latitude, p.longitude]) }))
         .sort((a, b) => a.distanceKm - b.distanceKm)
-    : [];
+    : livePlaces.map((p) => ({ ...p, distanceKm: null as number | null }));
 
   const nearestMapPins = [
     ...mapPins.slice(0, 12),
