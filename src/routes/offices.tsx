@@ -367,19 +367,59 @@ function Offices() {
         </div>
       </div>
 
+      {/* All-India live office search */}
+      <section className="mt-5 rounded-2xl border border-border bg-muted/30 p-4">
+        <h2 className="text-sm font-semibold flex items-center gap-2">
+          <Globe2 className="size-4 text-primary" /> Search any government office anywhere in India
+        </h2>
+        <p className="text-xs text-muted-foreground mt-1">
+          Type any city, district, town or pincode — results come live from Google Maps, covering every
+          district in India, not just our indexed list.
+        </p>
+        <div className="mt-3 flex flex-col sm:flex-row gap-2">
+          <Input
+            value={areaQ}
+            onChange={(e) => setAreaQ(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") runAreaSearch(); }}
+            placeholder="e.g. Guntur, Varanasi, Shillong, 110001"
+            className="sm:max-w-xs"
+            aria-label="City, district or pincode"
+          />
+          <select
+            value={areaCat}
+            onChange={(e) => setAreaCat(e.target.value)}
+            aria-label="Office type"
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm sm:max-w-xs"
+          >
+            {AREA_CATS.map((c) => (
+              <option key={c.key} value={c.key}>{c.label}</option>
+            ))}
+          </select>
+          <Button onClick={runAreaSearch} disabled={areaLoading} className="gap-2">
+            {areaLoading ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
+            Find offices
+          </Button>
+        </div>
+        {areaCenter && (
+          <p className="text-xs text-muted-foreground mt-2">Showing offices around {areaCenter.label}</p>
+        )}
+      </section>
+
       {liveWithDistance.length > 0 && (
         <section className="mt-5">
           <h2 className="text-sm font-semibold mb-2 flex items-center gap-2">
-            <Globe2 className="size-4 text-primary" /> Live results from Google Maps
+            <Globe2 className="size-4 text-primary" /> {liveWithDistance.length} live results from Google Maps
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {liveWithDistance.map((p) => (
               <div key={p.id} className="rounded-xl border border-border bg-background/60 p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="text-[10px] font-semibold uppercase tracking-wide text-saffron">{p.department}</div>
-                  <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">
-                    {p.distanceKm.toFixed(1)} km
-                  </span>
+                  {p.distanceKm != null && (
+                    <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+                      {p.distanceKm.toFixed(1)} km
+                    </span>
+                  )}
                 </div>
                 <h3 className="mt-1 font-semibold text-sm leading-tight">{p.name}</h3>
                 <p className="mt-1 text-xs text-muted-foreground flex items-start gap-1.5">
