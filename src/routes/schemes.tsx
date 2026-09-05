@@ -17,7 +17,7 @@ export const Route = createFileRoute("/schemes")({
   head: () => ({
     meta: [
       { title: "Find Government Schemes in India | JanSahayak" },
-      { name: "description", content: "Search 340+ verified central and state government schemes by state, category, income, gender, caste and occupation." },
+      { name: "description", content: "Search 490+ verified central and state government schemes by state, category, income, gender, caste and occupation." },
       { property: "og:title", content: "Find Indian Government Schemes" },
       { property: "og:description", content: "Search verified central and state schemes by state, income, category and more." },
       { property: "og:type", content: "website" },
